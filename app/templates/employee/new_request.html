@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div class="d-flex align-items-center mb-4">
+            <a href="{{ url_for('employee.dashboard') }}" class="btn btn-outline-secondary btn-sm me-3">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <h4 class="mb-0"><i class="bi bi-plus-circle me-2"></i>Solicitar Veículo</h4>
+        </div>
+
+        <div class="card">
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('employee.new_request') }}" novalidate>
+                    {{ form.hidden_tag() }}
+
+                    <div class="mb-3">
+                        {{ form.full_name.label(class="form-label fw-semibold") }}
+                        {{ form.full_name(class="form-control" + (" is-invalid" if form.full_name.errors else ""), readonly=true) }}
+                        {% for error in form.full_name.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.vehicle_id.label(class="form-label fw-semibold") }}
+                        {{ form.vehicle_id(class="form-select" + (" is-invalid" if form.vehicle_id.errors else "")) }}
+                        {% for error in form.vehicle_id.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            {{ form.departure_datetime.label(class="form-label fw-semibold") }}
+                            {{ form.departure_datetime(class="form-control" + (" is-invalid" if form.departure_datetime.errors else "")) }}
+                            {% for error in form.departure_datetime.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.expected_return_datetime.label(class="form-label fw-semibold") }}
+                            {{ form.expected_return_datetime(class="form-control" + (" is-invalid" if form.expected_return_datetime.errors else "")) }}
+                            {% for error in form.expected_return_datetime.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.reason.label(class="form-label fw-semibold") }}
+                        {{ form.reason(class="form-control" + (" is-invalid" if form.reason.errors else ""), rows=3, placeholder="Descreva o motivo da saída...") }}
+                        {% for error in form.reason.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-4 form-check form-switch">
+                        {{ form.returns_to_company(class="form-check-input", role="switch") }}
+                        {{ form.returns_to_company.label(class="form-check-label fw-semibold") }}
+                    </div>
+
+                    <div class="d-grid">
+                        {{ form.submit(class="btn btn-dark btn-lg") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

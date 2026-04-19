@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h4 class="mb-4"><i class="bi bi-clipboard-check me-2"></i>Painel do Coordenador</h4>
+
+<h5 class="mb-3">
+    <span class="badge badge-pending me-2">{{ pending|length }}</span>
+    Solicitações Pendentes
+</h5>
+
+{% if pending %}
+    {% for req in pending %}
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="row align-items-start">
+                <div class="col-md-8">
+                    <h6 class="fw-bold mb-1">
+                        <i class="bi bi-person me-1"></i>{{ req.employee.full_name }}
+                        <small class="text-muted fw-normal ms-2">@{{ req.employee.username }}</small>
+                    </h6>
+                    <p class="mb-1">
+                        <i class="bi bi-truck me-1 text-muted"></i>
+                        <strong>{{ req.vehicle.name }}</strong> — {{ req.vehicle.plate }} ({{ req.vehicle.model }})
+                    </p>
+                    <p class="mb-1 small text-muted">
+                        <i class="bi bi-calendar-event me-1"></i>
+                        Saída: <strong>{{ req.departure_datetime.strftime('%d/%m/%Y %H:%M') }}</strong>
+                        &nbsp;|&nbsp;
+                        Retorno previsto: <strong>{{ req.expected_return_datetime.strftime('%d/%m/%Y %H:%M') }}</strong>
+                    </p>
+                    <p class="mb-1 small text-muted">
+                        <i class="bi bi-chat-text me-1"></i>{{ req.reason }}
+                    </p>
+                    <p class="mb-0 small">
+                        Retorna à empresa:
+                        {% if req.returns_to_company %}
+                            <span class="badge bg-success">Sim</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Não</span>
+                        {% endif %}
+                        &nbsp;|&nbsp; Solicitado em {{ req.created_at.strftime('%d/%m/%Y %H:%M') }}
+                    </p>
+                </div>
+                <div class="col-md-4">
+                    <form method="POST" action="{{ url_for('coordinator.approve', request_id=req.id) }}" class="mb-2">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="text" name="notes" class="form-control form-control-sm mb-2" placeholder="Observação (opcional)">
+                        <button type="submit" class="btn btn-success btn-sm w-100">
+                            <i class="bi bi-check-lg me-1"></i>Aprovar
+                        </button>
+                    </form>
+                    <form method="POST" action="{{ url_for('coordinator.reject', request_id=req.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="text" name="notes" class="form-control form-control-sm mb-2" placeholder="Motivo da recusa (obrigatório)">
+                        <button type="submit" class="btn btn-danger btn-sm w-100">
+                            <i class="bi bi-x-lg me-1"></i>Recusar
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+<div class="text-center py-4 text-muted">
+    <i class="bi bi-check2-all display-4"></i>
+    <p class="mt-2">Nenhuma solicitação pendente.</p>
+</div>
+{% endif %}
+
+<hr class="my-4">
+<h5 class="mb-3">Histórico recente</h5>
+
+{% if history %}
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-sm table-hover mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th>Funcionário</th>
+                    <th>Veículo</th>
+                    <th>Saída</th>
+                    <th>Status</th>
+                    <th>Observação</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for req in history %}
+                <tr>
+                    <td>{{ req.employee.full_name }}</td>
+                    <td>{{ req.vehicle.name }} ({{ req.vehicle.plate }})</td>
+                    <td>{{ req.departure_datetime.strftime('%d/%m/%Y %H:%M') }}</td>
+                    <td>
+                        {% if req.is_approved() %}
+                            <span class="badge bg-success">Aprovado</span>
+                        {% else %}
+                            <span class="badge bg-danger">Recusado</span>
+                        {% endif %}
+                    </td>
+                    <td><small>{{ req.coordinator_notes or '—' }}</small></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<p class="text-muted">Nenhum histórico disponível.</p>
+{% endif %}
+{% endblock %}
