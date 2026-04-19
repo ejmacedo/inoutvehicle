@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ title }} - InOut Veículos{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; }
+        .navbar-brand { font-weight: 700; letter-spacing: 1px; }
+        .sidebar { min-height: calc(100vh - 56px); background: #212529; }
+        .sidebar .nav-link { color: #adb5bd; border-radius: 6px; margin-bottom: 2px; }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active { color: #fff; background: #343a40; }
+        .sidebar .nav-link i { width: 20px; }
+        .card { border: none; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+        .badge-pending { background-color: #ffc107; color: #212529; }
+        .table th { font-size: .85rem; text-transform: uppercase; letter-spacing: .5px; }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="{{ url_for('main.index') }}">
+            <i class="bi bi-truck me-2"></i>InOut Veículos
+        </a>
+        {% if current_user.is_authenticated %}
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+            <ul class="navbar-nav align-items-center">
+                <li class="nav-item me-3">
+                    <span class="text-secondary small">
+                        <i class="bi bi-person-circle me-1"></i>{{ current_user.full_name }}
+                        <span class="badge bg-secondary ms-1">
+                            {% if current_user.is_admin() %}Admin
+                            {% elif current_user.is_coordinator() %}Coordenador
+                            {% elif current_user.is_security() %}Portaria
+                            {% else %}Funcionário{% endif %}
+                        </span>
+                    </span>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('auth.logout') }}">
+                        <i class="bi bi-box-arrow-right"></i> Sair
+                    </a>
+                </li>
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+</nav>
+
+{% if current_user.is_authenticated %}
+<div class="container-fluid">
+    <div class="row">
+        <nav class="col-md-2 d-none d-md-block sidebar py-3 px-2">
+            <ul class="nav flex-column">
+                {% if current_user.is_admin() %}
+                <li class="nav-item"><a class="nav-link {% if request.endpoint and 'admin.dashboard' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.dashboard') }}"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link {% if request.endpoint and 'admin.users' in request.endpoint or request.endpoint and 'user' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.users') }}"><i class="bi bi-people"></i> Usuários</a></li>
+                <li class="nav-item"><a class="nav-link {% if request.endpoint and 'vehicle' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.vehicles') }}"><i class="bi bi-truck"></i> Veículos</a></li>
+                {% elif current_user.is_coordinator() %}
+                <li class="nav-item"><a class="nav-link active" href="{{ url_for('coordinator.dashboard') }}"><i class="bi bi-clipboard-check"></i> Solicitações</a></li>
+                {% elif current_user.is_security() %}
+                <li class="nav-item"><a class="nav-link active" href="{{ url_for('security.dashboard') }}"><i class="bi bi-shield-check"></i> Portaria</a></li>
+                {% else %}
+                <li class="nav-item"><a class="nav-link {% if request.endpoint == 'employee.dashboard' %}active{% endif %}" href="{{ url_for('employee.dashboard') }}"><i class="bi bi-list-ul"></i> Minhas Solicitações</a></li>
+                <li class="nav-item"><a class="nav-link {% if request.endpoint == 'employee.new_request' %}active{% endif %}" href="{{ url_for('employee.new_request') }}"><i class="bi bi-plus-circle"></i> Nova Solicitação</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+
+        <main class="col-md-10 ms-sm-auto px-4 py-4">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+</div>
+{% else %}
+<div class="container py-5">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    {% block content_unauthenticated %}{% endblock %}
+</div>
+{% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

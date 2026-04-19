@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="d-flex align-items-center mb-4">
+            <a href="{{ url_for('admin.vehicles') }}" class="btn btn-outline-secondary btn-sm me-3">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <h4 class="mb-0">{{ title }}</h4>
+        </div>
+        <div class="card">
+            <div class="card-body p-4">
+                <form method="POST" novalidate>
+                    {{ form.hidden_tag() }}
+
+                    <div class="mb-3">
+                        {{ form.name.label(class="form-label fw-semibold") }}
+                        {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else ""), placeholder="Ex: Gol Branco") }}
+                        {% for e in form.name.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.plate.label(class="form-label fw-semibold") }}
+                        {{ form.plate(class="form-control" + (" is-invalid" if form.plate.errors else ""), placeholder="Ex: ABC-1234") }}
+                        {% for e in form.plate.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.model.label(class="form-label fw-semibold") }}
+                        {{ form.model(class="form-control" + (" is-invalid" if form.model.errors else ""), placeholder="Ex: Volkswagen Gol 2020") }}
+                        {% for e in form.model.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+                    </div>
+                    <div class="mb-4 form-check form-switch">
+                        {{ form.is_active(class="form-check-input", role="switch") }}
+                        {{ form.is_active.label(class="form-check-label fw-semibold") }}
+                    </div>
+                    <div class="d-grid">
+                        {{ form.submit(class="btn btn-dark btn-lg") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

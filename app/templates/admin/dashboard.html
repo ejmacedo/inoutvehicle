@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h4 class="mb-4"><i class="bi bi-speedometer2 me-2"></i>Painel Administrativo</h4>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body py-4">
+                <i class="bi bi-people display-5 text-primary"></i>
+                <h3 class="mt-2 mb-0">{{ total_users }}</h3>
+                <p class="text-muted mb-0">Usuários</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body py-4">
+                <i class="bi bi-truck display-5 text-success"></i>
+                <h3 class="mt-2 mb-0">{{ total_vehicles }}</h3>
+                <p class="text-muted mb-0">Veículos Ativos</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body py-4">
+                <i class="bi bi-file-text display-5 text-info"></i>
+                <h3 class="mt-2 mb-0">{{ total_requests }}</h3>
+                <p class="text-muted mb-0">Total Solicitações</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body py-4">
+                <i class="bi bi-clock display-5 text-warning"></i>
+                <h3 class="mt-2 mb-0">{{ pending_requests }}</h3>
+                <p class="text-muted mb-0">Pendentes</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h6 class="card-title"><i class="bi bi-people me-2"></i>Gerenciar Usuários</h6>
+                <p class="text-muted small">Cadastre funcionários, coordenadores, portaria e administradores.</p>
+                <a href="{{ url_for('admin.users') }}" class="btn btn-outline-dark btn-sm me-2">Ver Usuários</a>
+                <a href="{{ url_for('admin.create_user') }}" class="btn btn-dark btn-sm">Novo Usuário</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h6 class="card-title"><i class="bi bi-truck me-2"></i>Gerenciar Veículos</h6>
+                <p class="text-muted small">Cadastre e gerencie a frota de veículos disponíveis.</p>
+                <a href="{{ url_for('admin.vehicles') }}" class="btn btn-outline-dark btn-sm me-2">Ver Veículos</a>
+                <a href="{{ url_for('admin.create_vehicle') }}" class="btn btn-dark btn-sm">Novo Veículo</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
