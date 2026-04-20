@@ -47,10 +47,19 @@ def mark_departed(request_id):
     vehicle_request = VehicleRequest.query.get_or_404(request_id)
     if not vehicle_request.is_approved():
         abort(400)
+
+    odometer_raw = request.form.get('odometer', '').strip()
+    if not odometer_raw or not odometer_raw.isdigit() or int(odometer_raw) <= 0:
+        flash('Informe a quilometragem atual do veículo antes de registrar a saída.', 'warning')
+        return redirect(url_for('security.dashboard',
+                                date=vehicle_request.departure_datetime.date().isoformat()))
+
+    vehicle_request.odometer_departure = int(odometer_raw)
     vehicle_request.actual_departure_datetime = datetime.now(timezone.utc)
     db.session.commit()
     flash(f'Saída de {vehicle_request.employee.full_name} registrada às '
-          f'{vehicle_request.actual_departure_datetime.strftime("%H:%M")}.', 'success')
+          f'{vehicle_request.actual_departure_datetime.strftime("%H:%M")} '
+          f'— Odômetro: {int(odometer_raw):,} km.', 'success')
     return redirect(url_for('security.dashboard',
                             date=vehicle_request.departure_datetime.date().isoformat()))
 

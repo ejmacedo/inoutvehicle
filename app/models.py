@@ -106,6 +106,9 @@ class VehicleRequest(db.Model):
     actual_departure_datetime = db.Column(db.DateTime, nullable=True)
     actual_return_datetime = db.Column(db.DateTime, nullable=True)
 
+    # Odômetro na saída (preenchido pela portaria)
+    odometer_departure = db.Column(db.Integer, nullable=True)
+
     reason = db.Column(db.Text, nullable=False)
     returns_to_company = db.Column(db.Boolean, nullable=False, default=True)
     status = db.Column(db.String(20), nullable=False, default=RequestStatus.PENDING)

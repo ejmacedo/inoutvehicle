@@ -34,7 +34,20 @@
                         {{ form.remember_me.label(class="form-check-label") }}
                     </div>
                     {{ form.submit(class="btn btn-dark w-100") }}
+
+                    {# Erro de credenciais — exibido abaixo do botão, dentro do card #}
+                    {% if error %}
+                    <div class="alert alert-danger mt-3 mb-0 py-2 text-center small" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-1"></i>{{ error }}
+                    </div>
+                    {% endif %}
                 </form>
+
+                <div class="text-center mt-3">
+                    <a href="{{ url_for('auth.password_reset_request') }}" class="text-muted small">
+                        <i class="bi bi-key me-1"></i>Esqueci minha senha
+                    </a>
+                </div>
             </div>
         </div>
     </div>

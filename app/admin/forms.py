@@ -1,61 +1,80 @@
 from flask_wtf import FlaskForm
 from wtforms import (StringField, PasswordField, SelectField, SelectMultipleField,
                      BooleanField, SubmitField)
-from wtforms.validators import DataRequired, Email, Length, Optional, EqualTo, ValidationError
-from app.models import User
+from wtforms.validators import DataRequired, Email, Length, Optional, EqualTo
 
 
 class UserForm(FlaskForm):
-    username = StringField('Usuário', validators=[DataRequired(), Length(min=2, max=64)])
-    email = StringField('E-mail', validators=[DataRequired(), Email(), Length(max=120)])
-    full_name = StringField('Nome Completo', validators=[DataRequired(), Length(max=140)])
+    username = StringField('Usuário', validators=[
+        DataRequired(message='O nome de usuário é obrigatório.'),
+        Length(min=2, max=64, message='O usuário deve ter entre 2 e 64 caracteres.'),
+    ])
+    email = StringField('E-mail', validators=[
+        DataRequired(message='O e-mail é obrigatório.'),
+        Email(message='Informe um endereço de e-mail válido.'),
+        Length(max=120, message='O e-mail deve ter no máximo 120 caracteres.'),
+    ])
+    full_name = StringField('Nome Completo', validators=[
+        DataRequired(message='O nome completo é obrigatório.'),
+        Length(max=140, message='O nome deve ter no máximo 140 caracteres.'),
+    ])
     role = SelectField('Perfil', choices=[
         ('employee', 'Funcionário'),
         ('coordinator', 'Coordenador'),
         ('security', 'Portaria'),
         ('admin', 'Administrador'),
-    ], validators=[DataRequired()])
+    ], validators=[DataRequired(message='Selecione um perfil.')])
     coordinator_ids = SelectMultipleField(
         'Coordenadores Responsáveis',
         coerce=int,
         validators=[Optional()],
-        description='Segure Ctrl (ou Cmd) para selecionar múltiplos',
+        description='Marque um ou mais coordenadores responsáveis por este funcionário.',
     )
-    password = PasswordField('Senha', validators=[DataRequired(), Length(min=6)])
-    password2 = PasswordField('Confirmar Senha', validators=[DataRequired(), EqualTo('password')])
+    password = PasswordField('Senha', validators=[
+        DataRequired(message='A senha é obrigatória.'),
+        Length(min=6, message='A senha deve ter no mínimo 6 caracteres.'),
+    ])
+    password2 = PasswordField('Confirmar Senha', validators=[
+        DataRequired(message='Confirme a senha.'),
+        EqualTo('password', message='As senhas não coincidem.'),
+    ])
     is_active = BooleanField('Ativo', default=True)
     submit = SubmitField('Salvar')
 
-    def validate_username(self, field):
-        if User.query.filter_by(username=field.data).first():
-            raise ValidationError('Este nome de usuário já está em uso.')
-
-    def validate_email(self, field):
-        if User.query.filter_by(email=field.data).first():
-            raise ValidationError('Este e-mail já está cadastrado.')
-
 
 class EditUserForm(FlaskForm):
-    username = StringField('Usuário', validators=[DataRequired(), Length(min=2, max=64)])
-    email = StringField('E-mail', validators=[DataRequired(), Email(), Length(max=120)])
-    full_name = StringField('Nome Completo', validators=[DataRequired(), Length(max=140)])
+    username = StringField('Usuário', validators=[
+        DataRequired(message='O nome de usuário é obrigatório.'),
+        Length(min=2, max=64, message='O usuário deve ter entre 2 e 64 caracteres.'),
+    ])
+    email = StringField('E-mail', validators=[
+        DataRequired(message='O e-mail é obrigatório.'),
+        Email(message='Informe um endereço de e-mail válido.'),
+        Length(max=120, message='O e-mail deve ter no máximo 120 caracteres.'),
+    ])
+    full_name = StringField('Nome Completo', validators=[
+        DataRequired(message='O nome completo é obrigatório.'),
+        Length(max=140, message='O nome deve ter no máximo 140 caracteres.'),
+    ])
     role = SelectField('Perfil', choices=[
         ('employee', 'Funcionário'),
         ('coordinator', 'Coordenador'),
         ('security', 'Portaria'),
         ('admin', 'Administrador'),
-    ], validators=[DataRequired()])
+    ], validators=[DataRequired(message='Selecione um perfil.')])
     coordinator_ids = SelectMultipleField(
         'Coordenadores Responsáveis',
         coerce=int,
         validators=[Optional()],
-        description='Segure Ctrl (ou Cmd) para selecionar múltiplos',
+        description='Marque um ou mais coordenadores responsáveis por este funcionário.',
     )
-    password = PasswordField(
-        'Nova Senha (deixe em branco para não alterar)',
-        validators=[Optional(), Length(min=6)],
-    )
-    password2 = PasswordField('Confirmar Nova Senha', validators=[EqualTo('password')])
+    password = PasswordField('Nova Senha (deixe em branco para não alterar)', validators=[
+        Optional(),
+        Length(min=6, message='A senha deve ter no mínimo 6 caracteres.'),
+    ])
+    password2 = PasswordField('Confirmar Nova Senha', validators=[
+        EqualTo('password', message='As senhas não coincidem.'),
+    ])
     is_active = BooleanField('Ativo')
     submit = SubmitField('Salvar')
 
@@ -63,20 +82,19 @@ class EditUserForm(FlaskForm):
         super().__init__(*args, **kwargs)
         self.original_user = original_user
 
-    def validate_username(self, field):
-        if field.data != self.original_user.username:
-            if User.query.filter_by(username=field.data).first():
-                raise ValidationError('Este nome de usuário já está em uso.')
-
-    def validate_email(self, field):
-        if field.data != self.original_user.email:
-            if User.query.filter_by(email=field.data).first():
-                raise ValidationError('Este e-mail já está cadastrado.')
-
 
 class VehicleForm(FlaskForm):
-    name = StringField('Nome', validators=[DataRequired(), Length(max=100)])
-    plate = StringField('Placa', validators=[DataRequired(), Length(max=20)])
-    model = StringField('Modelo', validators=[DataRequired(), Length(max=100)])
+    name = StringField('Nome', validators=[
+        DataRequired(message='O nome do veículo é obrigatório.'),
+        Length(max=100, message='O nome deve ter no máximo 100 caracteres.'),
+    ])
+    plate = StringField('Placa', validators=[
+        DataRequired(message='A placa é obrigatória.'),
+        Length(max=20, message='A placa deve ter no máximo 20 caracteres.'),
+    ])
+    model = StringField('Modelo', validators=[
+        DataRequired(message='O modelo é obrigatório.'),
+        Length(max=100, message='O modelo deve ter no máximo 100 caracteres.'),
+    ])
     is_active = BooleanField('Ativo', default=True)
     submit = SubmitField('Salvar')
