@@ -90,10 +90,10 @@ def export_excel():
     headers = [
         '#', 'Funcionário', 'Veículo', 'Placa',
         'Saída Prevista', 'Retorno Previsto',
-        'Saída Real', 'Retorno Real',
+        'Saída Real', 'Odômetro (km)', 'Retorno Real',
         'Motivo', 'Retorna?', 'Status', 'Observação',
     ]
-    col_widths = [5, 28, 20, 12, 18, 18, 18, 18, 35, 10, 12, 30]
+    col_widths = [5, 28, 20, 12, 18, 18, 18, 15, 18, 35, 10, 12, 30]
 
     for col_idx, (header, width) in enumerate(zip(headers, col_widths), start=1):
         cell = ws.cell(row=1, column=col_idx, value=header)
@@ -116,6 +116,7 @@ def export_excel():
             req.departure_datetime.strftime('%d/%m/%Y %H:%M'),
             req.expected_return_datetime.strftime('%d/%m/%Y %H:%M'),
             req.actual_departure_datetime.strftime('%d/%m/%Y %H:%M') if req.actual_departure_datetime else '—',
+            req.odometer_departure if req.odometer_departure else '—',
             req.actual_return_datetime.strftime('%d/%m/%Y %H:%M') if req.actual_return_datetime else '—',
             req.reason,
             'Sim' if req.returns_to_company else 'Não',
@@ -171,6 +172,7 @@ def export_pdf():
         Paragraph('<b>Saída Prevista</b>', cell_style),
         Paragraph('<b>Retorno Previsto</b>', cell_style),
         Paragraph('<b>Saída Real</b>', cell_style),
+        Paragraph('<b>Odômetro</b>', cell_style),
         Paragraph('<b>Retorno Real</b>', cell_style),
         Paragraph('<b>Status</b>', cell_style),
         Paragraph('<b>Motivo</b>', cell_style),
@@ -186,13 +188,15 @@ def export_pdf():
             Paragraph(req.expected_return_datetime.strftime('%d/%m/%Y\n%H:%M'), cell_style),
             Paragraph(req.actual_departure_datetime.strftime('%d/%m/%Y\n%H:%M')
                       if req.actual_departure_datetime else '—', cell_style),
+            Paragraph(f'{req.odometer_departure:,} km'.replace(',', '.')
+                      if req.odometer_departure else '—', cell_style),
             Paragraph(req.actual_return_datetime.strftime('%d/%m/%Y\n%H:%M')
                       if req.actual_return_datetime else '—', cell_style),
             Paragraph(status_map.get(req.status, req.status), cell_style),
             Paragraph(req.reason[:80], cell_style),
         ])
 
-    col_widths_pdf = [1*cm, 4.5*cm, 3.5*cm, 3*cm, 3*cm, 3*cm, 3*cm, 2.5*cm, 5*cm]
+    col_widths_pdf = [1*cm, 4*cm, 3*cm, 2.8*cm, 2.8*cm, 2.8*cm, 2.2*cm, 2.8*cm, 2.2*cm, 4*cm]
 
     table = Table(data, colWidths=col_widths_pdf, repeatRows=1)
     table.setStyle(TableStyle([

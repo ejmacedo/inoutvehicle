@@ -8,7 +8,9 @@ from app.decorators import role_required
 
 
 def _coordinator_choices():
-    coordinators = User.query.filter_by(role=Role.COORDINATOR, is_active=True).order_by(User.full_name).all()
+    coordinators = (User.query
+                    .filter_by(role=Role.COORDINATOR, is_active=True)
+                    .order_by(User.full_name).all())
     return [(c.id, c.full_name) for c in coordinators]
 
 
@@ -41,6 +43,15 @@ def create_user():
     form.coordinator_ids.choices = _coordinator_choices()
 
     if form.validate_on_submit():
+        # Verificações de duplicidade → aparecem como toasts
+        if User.query.filter_by(username=form.username.data).first():
+            flash(f'O nome de usuário "{form.username.data}" já está em uso. Escolha outro.', 'danger')
+            return render_template('admin/user_form.html', title='Novo Usuário', form=form)
+
+        if User.query.filter_by(email=form.email.data).first():
+            flash(f'O e-mail "{form.email.data}" já está cadastrado. Use outro endereço.', 'danger')
+            return render_template('admin/user_form.html', title='Novo Usuário', form=form)
+
         user = User(
             username=form.username.data,
             email=form.email.data,
@@ -49,13 +60,12 @@ def create_user():
             is_active=form.is_active.data,
         )
         user.set_password(form.password.data)
-        # Atribui coordenadores selecionados
         if form.role.data == Role.EMPLOYEE and form.coordinator_ids.data:
             coords = User.query.filter(User.id.in_(form.coordinator_ids.data)).all()
             user.coordinators = coords
         db.session.add(user)
         db.session.commit()
-        flash(f'Usuário {user.username} criado com sucesso.', 'success')
+        flash(f'Usuário "{user.username}" criado com sucesso.', 'success')
         return redirect(url_for('admin.users'))
 
     return render_template('admin/user_form.html', title='Novo Usuário', form=form)
@@ -70,6 +80,19 @@ def edit_user(user_id):
     form.coordinator_ids.choices = _coordinator_choices()
 
     if form.validate_on_submit():
+        # Verificações de duplicidade → aparecem como toasts
+        if (form.username.data != user.username and
+                User.query.filter_by(username=form.username.data).first()):
+            flash(f'O nome de usuário "{form.username.data}" já está em uso. Escolha outro.', 'danger')
+            form.coordinator_ids.data = [c.id for c in user.coordinators]
+            return render_template('admin/user_form.html', title='Editar Usuário', form=form, user=user)
+
+        if (form.email.data != user.email and
+                User.query.filter_by(email=form.email.data).first()):
+            flash(f'O e-mail "{form.email.data}" já está cadastrado. Use outro endereço.', 'danger')
+            form.coordinator_ids.data = [c.id for c in user.coordinators]
+            return render_template('admin/user_form.html', title='Editar Usuário', form=form, user=user)
+
         user.username = form.username.data
         user.email = form.email.data
         user.full_name = form.full_name.data
@@ -83,10 +106,9 @@ def edit_user(user_id):
         else:
             user.coordinators = []
         db.session.commit()
-        flash(f'Usuário {user.username} atualizado com sucesso.', 'success')
+        flash(f'Usuário "{user.username}" atualizado com sucesso.', 'success')
         return redirect(url_for('admin.users'))
 
-    # Pré-seleciona coordenadores actuais
     form.coordinator_ids.data = [c.id for c in user.coordinators]
     return render_template('admin/user_form.html', title='Editar Usuário', form=form, user=user)
 
@@ -105,15 +127,20 @@ def vehicles():
 def create_vehicle():
     form = VehicleForm()
     if form.validate_on_submit():
+        plate_upper = form.plate.data.upper()
+        if Vehicle.query.filter_by(plate=plate_upper).first():
+            flash(f'Já existe um veículo cadastrado com a placa "{plate_upper}".', 'danger')
+            return render_template('admin/vehicle_form.html', title='Novo Veículo', form=form)
+
         vehicle = Vehicle(
             name=form.name.data,
-            plate=form.plate.data.upper(),
+            plate=plate_upper,
             model=form.model.data,
             is_active=form.is_active.data,
         )
         db.session.add(vehicle)
         db.session.commit()
-        flash(f'Veículo {vehicle.name} cadastrado com sucesso.', 'success')
+        flash(f'Veículo "{vehicle.name}" cadastrado com sucesso.', 'success')
         return redirect(url_for('admin.vehicles'))
     return render_template('admin/vehicle_form.html', title='Novo Veículo', form=form)
 
@@ -125,11 +152,17 @@ def edit_vehicle(vehicle_id):
     vehicle = Vehicle.query.get_or_404(vehicle_id)
     form = VehicleForm(obj=vehicle)
     if form.validate_on_submit():
+        plate_upper = form.plate.data.upper()
+        existing = Vehicle.query.filter_by(plate=plate_upper).first()
+        if existing and existing.id != vehicle.id:
+            flash(f'Já existe outro veículo cadastrado com a placa "{plate_upper}".', 'danger')
+            return render_template('admin/vehicle_form.html', title='Editar Veículo', form=form, vehicle=vehicle)
+
         vehicle.name = form.name.data
-        vehicle.plate = form.plate.data.upper()
+        vehicle.plate = plate_upper
         vehicle.model = form.model.data
         vehicle.is_active = form.is_active.data
         db.session.commit()
-        flash(f'Veículo {vehicle.name} atualizado com sucesso.', 'success')
+        flash(f'Veículo "{vehicle.name}" atualizado com sucesso.', 'success')
         return redirect(url_for('admin.vehicles'))
     return render_template('admin/vehicle_form.html', title='Editar Veículo', form=form, vehicle=vehicle)
