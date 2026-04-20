@@ -8,8 +8,14 @@ echo   InOut Veículos — Aplicando Atualizações
 echo  ============================================
 echo.
 
-cd /d "%~dp0"
+cd /d "%~dp0.."
 call .\.venv\Scripts\activate
+if errorlevel 1 (
+    echo  [ERRO] Ambiente virtual nao encontrado.
+    echo  Execute instalar.bat primeiro.
+    pause
+    exit /b 1
+)
 cd inoutvehicle
 
 echo  [1/4] Baixando atualizacoes do GitHub...
