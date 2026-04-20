@@ -7,6 +7,11 @@ from app.extensions import db
 from app.decorators import role_required
 
 
+def _coordinator_choices():
+    coordinators = User.query.filter_by(role=Role.COORDINATOR, is_active=True).order_by(User.full_name).all()
+    return [(c.id, c.full_name) for c in coordinators]
+
+
 @bp.route('/dashboard')
 @login_required
 @role_required(Role.ADMIN)
@@ -33,8 +38,7 @@ def users():
 @role_required(Role.ADMIN)
 def create_user():
     form = UserForm()
-    coordinators = User.query.filter_by(role=Role.COORDINATOR, is_active=True).order_by(User.full_name).all()
-    form.coordinator_id.choices = [(0, '-- Nenhum --')] + [(c.id, c.full_name) for c in coordinators]
+    form.coordinator_ids.choices = _coordinator_choices()
 
     if form.validate_on_submit():
         user = User(
@@ -43,9 +47,12 @@ def create_user():
             full_name=form.full_name.data,
             role=form.role.data,
             is_active=form.is_active.data,
-            coordinator_id=form.coordinator_id.data if form.coordinator_id.data != 0 else None,
         )
         user.set_password(form.password.data)
+        # Atribui coordenadores selecionados
+        if form.role.data == Role.EMPLOYEE and form.coordinator_ids.data:
+            coords = User.query.filter(User.id.in_(form.coordinator_ids.data)).all()
+            user.coordinators = coords
         db.session.add(user)
         db.session.commit()
         flash(f'Usuário {user.username} criado com sucesso.', 'success')
@@ -60,8 +67,7 @@ def create_user():
 def edit_user(user_id):
     user = User.query.get_or_404(user_id)
     form = EditUserForm(original_user=user, obj=user)
-    coordinators = User.query.filter_by(role=Role.COORDINATOR, is_active=True).order_by(User.full_name).all()
-    form.coordinator_id.choices = [(0, '-- Nenhum --')] + [(c.id, c.full_name) for c in coordinators]
+    form.coordinator_ids.choices = _coordinator_choices()
 
     if form.validate_on_submit():
         user.username = form.username.data
@@ -69,14 +75,19 @@ def edit_user(user_id):
         user.full_name = form.full_name.data
         user.role = form.role.data
         user.is_active = form.is_active.data
-        user.coordinator_id = form.coordinator_id.data if form.coordinator_id.data != 0 else None
         if form.password.data:
             user.set_password(form.password.data)
+        if form.role.data == Role.EMPLOYEE:
+            coords = User.query.filter(User.id.in_(form.coordinator_ids.data or [])).all()
+            user.coordinators = coords
+        else:
+            user.coordinators = []
         db.session.commit()
         flash(f'Usuário {user.username} atualizado com sucesso.', 'success')
         return redirect(url_for('admin.users'))
 
-    form.coordinator_id.data = user.coordinator_id or 0
+    # Pré-seleciona coordenadores actuais
+    form.coordinator_ids.data = [c.id for c in user.coordinators]
     return render_template('admin/user_form.html', title='Editar Usuário', form=form, user=user)
 
 

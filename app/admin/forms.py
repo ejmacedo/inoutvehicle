@@ -1,5 +1,6 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SelectField, BooleanField, SubmitField
+from wtforms import (StringField, PasswordField, SelectField, SelectMultipleField,
+                     BooleanField, SubmitField)
 from wtforms.validators import DataRequired, Email, Length, Optional, EqualTo, ValidationError
 from app.models import User
 
@@ -14,20 +15,23 @@ class UserForm(FlaskForm):
         ('security', 'Portaria'),
         ('admin', 'Administrador'),
     ], validators=[DataRequired()])
-    coordinator_id = SelectField('Coordenador Responsável', coerce=int, validators=[Optional()])
+    coordinator_ids = SelectMultipleField(
+        'Coordenadores Responsáveis',
+        coerce=int,
+        validators=[Optional()],
+        description='Segure Ctrl (ou Cmd) para selecionar múltiplos',
+    )
     password = PasswordField('Senha', validators=[DataRequired(), Length(min=6)])
     password2 = PasswordField('Confirmar Senha', validators=[DataRequired(), EqualTo('password')])
     is_active = BooleanField('Ativo', default=True)
     submit = SubmitField('Salvar')
 
     def validate_username(self, field):
-        user = User.query.filter_by(username=field.data).first()
-        if user:
+        if User.query.filter_by(username=field.data).first():
             raise ValidationError('Este nome de usuário já está em uso.')
 
     def validate_email(self, field):
-        user = User.query.filter_by(email=field.data).first()
-        if user:
+        if User.query.filter_by(email=field.data).first():
             raise ValidationError('Este e-mail já está cadastrado.')
 
 
@@ -41,8 +45,16 @@ class EditUserForm(FlaskForm):
         ('security', 'Portaria'),
         ('admin', 'Administrador'),
     ], validators=[DataRequired()])
-    coordinator_id = SelectField('Coordenador Responsável', coerce=int, validators=[Optional()])
-    password = PasswordField('Nova Senha (deixe em branco para não alterar)', validators=[Optional(), Length(min=6)])
+    coordinator_ids = SelectMultipleField(
+        'Coordenadores Responsáveis',
+        coerce=int,
+        validators=[Optional()],
+        description='Segure Ctrl (ou Cmd) para selecionar múltiplos',
+    )
+    password = PasswordField(
+        'Nova Senha (deixe em branco para não alterar)',
+        validators=[Optional(), Length(min=6)],
+    )
     password2 = PasswordField('Confirmar Nova Senha', validators=[EqualTo('password')])
     is_active = BooleanField('Ativo')
     submit = SubmitField('Salvar')
@@ -53,14 +65,12 @@ class EditUserForm(FlaskForm):
 
     def validate_username(self, field):
         if field.data != self.original_user.username:
-            user = User.query.filter_by(username=field.data).first()
-            if user:
+            if User.query.filter_by(username=field.data).first():
                 raise ValidationError('Este nome de usuário já está em uso.')
 
     def validate_email(self, field):
         if field.data != self.original_user.email:
-            user = User.query.filter_by(email=field.data).first()
-            if user:
+            if User.query.filter_by(email=field.data).first():
                 raise ValidationError('Este e-mail já está cadastrado.')
 
 

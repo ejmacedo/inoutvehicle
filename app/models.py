@@ -11,6 +11,14 @@ class Role:
     SECURITY = 'security'
 
 
+# Tabela associativa: funcionário ↔ coordenadores (N:N)
+employee_coordinators = db.Table(
+    'employee_coordinators',
+    db.Column('employee_id', db.Integer, db.ForeignKey('users.id'), primary_key=True),
+    db.Column('coordinator_id', db.Integer, db.ForeignKey('users.id'), primary_key=True),
+)
+
+
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
 
@@ -20,13 +28,25 @@ class User(UserMixin, db.Model):
     full_name = db.Column(db.String(140), nullable=False)
     password_hash = db.Column(db.String(256), nullable=False)
     role = db.Column(db.String(20), nullable=False, default=Role.EMPLOYEE)
-    coordinator_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     is_active = db.Column(db.Boolean, default=True, nullable=False)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
-    coordinator = db.relationship('User', remote_side=[id], backref='subordinates')
-    requests = db.relationship('VehicleRequest', foreign_keys='VehicleRequest.employee_id',
-                               backref='employee', lazy='dynamic')
+    # Funcionário → lista de coordenadores responsáveis
+    coordinators = db.relationship(
+        'User',
+        secondary=employee_coordinators,
+        primaryjoin='User.id == employee_coordinators.c.employee_id',
+        secondaryjoin='User.id == employee_coordinators.c.coordinator_id',
+        backref=db.backref('employees', lazy='select'),
+        lazy='select',
+    )
+
+    requests = db.relationship(
+        'VehicleRequest',
+        foreign_keys='VehicleRequest.employee_id',
+        backref='employee',
+        lazy='dynamic',
+    )
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -77,15 +97,25 @@ class VehicleRequest(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     employee_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     vehicle_id = db.Column(db.Integer, db.ForeignKey('vehicles.id'), nullable=False)
+
+    # Datas previstas (preenchidas pelo funcionário)
     departure_datetime = db.Column(db.DateTime, nullable=False)
     expected_return_datetime = db.Column(db.DateTime, nullable=False)
+
+    # Datas reais (confirmadas pela portaria)
+    actual_departure_datetime = db.Column(db.DateTime, nullable=True)
+    actual_return_datetime = db.Column(db.DateTime, nullable=True)
+
     reason = db.Column(db.Text, nullable=False)
     returns_to_company = db.Column(db.Boolean, nullable=False, default=True)
     status = db.Column(db.String(20), nullable=False, default=RequestStatus.PENDING)
     coordinator_notes = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
-    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc),
-                           onupdate=lambda: datetime.now(timezone.utc))
+    updated_at = db.Column(
+        db.DateTime,
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+    )
 
     def is_pending(self):
         return self.status == RequestStatus.PENDING

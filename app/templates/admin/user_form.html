@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-md-7">
+    <div class="col-md-8">
         <div class="d-flex align-items-center mb-4">
             <a href="{{ url_for('admin.users') }}" class="btn btn-outline-secondary btn-sm me-3">
                 <i class="bi bi-arrow-left"></i>
@@ -33,15 +33,29 @@
                         {% for e in form.email.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
                     </div>
 
-                    <div class="row g-3 mb-3">
-                        <div class="col-md-6">
-                            {{ form.role.label(class="form-label fw-semibold") }}
-                            {{ form.role(class="form-select" + (" is-invalid" if form.role.errors else "")) }}
-                            {% for e in form.role.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
-                        </div>
-                        <div class="col-md-6">
-                            {{ form.coordinator_id.label(class="form-label fw-semibold") }}
-                            {{ form.coordinator_id(class="form-select") }}
+                    <div class="mb-3">
+                        {{ form.role.label(class="form-label fw-semibold") }}
+                        {{ form.role(class="form-select", id="roleSelect") }}
+                    </div>
+
+                    {# Seção de coordenadores — visível apenas para funcionários #}
+                    <div class="mb-3" id="coordinatorSection">
+                        <label class="form-label fw-semibold">Coordenadores Responsáveis</label>
+                        <p class="text-muted small mb-2">{{ form.coordinator_ids.description }}</p>
+                        <div class="border rounded p-3" style="max-height: 200px; overflow-y: auto; background:#f8f9fa;">
+                            {% if form.coordinator_ids.choices %}
+                                {% for value, label in form.coordinator_ids.choices %}
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox"
+                                           name="coordinator_ids" value="{{ value }}"
+                                           id="coord_{{ value }}"
+                                           {% if value in (form.coordinator_ids.data or []) %}checked{% endif %}>
+                                    <label class="form-check-label" for="coord_{{ value }}">{{ label }}</label>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <p class="text-muted mb-0 small">Nenhum coordenador ativo cadastrado.</p>
+                            {% endif %}
                         </div>
                     </div>
 
@@ -71,4 +85,16 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const roleSelect = document.getElementById('roleSelect');
+    const coordSection = document.getElementById('coordinatorSection');
+    function toggleCoord() {
+        coordSection.style.display = roleSelect.value === 'employee' ? 'block' : 'none';
+    }
+    roleSelect.addEventListener('change', toggleCoord);
+    toggleCoord();
+</script>
 {% endblock %}

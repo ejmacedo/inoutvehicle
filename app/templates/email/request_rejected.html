@@ -1,0 +1,15 @@
+{% extends "email/base_email.html" %}
+{% block content %}
+<p>Olá, <strong>{{ req.employee.full_name }}</strong>.</p>
+<p>Infelizmente sua solicitação de veículo foi <span class="badge badge-danger">✘ Recusada</span>.</p>
+
+<div class="info-box">
+  <p><strong>Veículo:</strong> {{ req.vehicle.name }} — {{ req.vehicle.plate }}</p>
+  <p><strong>Saída prevista:</strong> {{ req.departure_datetime.strftime('%d/%m/%Y %H:%M') }}</p>
+  {% if req.coordinator_notes %}
+  <p><strong>Motivo da recusa:</strong> {{ req.coordinator_notes }}</p>
+  {% endif %}
+</div>
+
+<p>Em caso de dúvidas, entre em contato com seu coordenador responsável.</p>
+{% endblock %}
