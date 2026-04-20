@@ -59,11 +59,13 @@
         <nav class="col-md-2 d-none d-md-block sidebar py-3 px-2">
             <ul class="nav flex-column">
                 {% if current_user.is_admin() %}
-                <li class="nav-item"><a class="nav-link {% if request.endpoint and 'admin.dashboard' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.dashboard') }}"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
-                <li class="nav-item"><a class="nav-link {% if request.endpoint and 'admin.users' in request.endpoint or request.endpoint and 'user' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.users') }}"><i class="bi bi-people"></i> Usuários</a></li>
+                <li class="nav-item"><a class="nav-link {% if request.endpoint == 'admin.dashboard' %}active{% endif %}" href="{{ url_for('admin.dashboard') }}"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link {% if request.endpoint and 'user' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.users') }}"><i class="bi bi-people"></i> Usuários</a></li>
                 <li class="nav-item"><a class="nav-link {% if request.endpoint and 'vehicle' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.vehicles') }}"><i class="bi bi-truck"></i> Veículos</a></li>
+                <li class="nav-item"><a class="nav-link {% if request.endpoint and 'reports' in request.endpoint %}active{% endif %}" href="{{ url_for('reports.index') }}"><i class="bi bi-bar-chart-line"></i> Relatórios</a></li>
                 {% elif current_user.is_coordinator() %}
-                <li class="nav-item"><a class="nav-link active" href="{{ url_for('coordinator.dashboard') }}"><i class="bi bi-clipboard-check"></i> Solicitações</a></li>
+                <li class="nav-item"><a class="nav-link {% if request.endpoint == 'coordinator.dashboard' %}active{% endif %}" href="{{ url_for('coordinator.dashboard') }}"><i class="bi bi-clipboard-check"></i> Solicitações</a></li>
+                <li class="nav-item"><a class="nav-link {% if request.endpoint and 'reports' in request.endpoint %}active{% endif %}" href="{{ url_for('reports.index') }}"><i class="bi bi-bar-chart-line"></i> Relatórios</a></li>
                 {% elif current_user.is_security() %}
                 <li class="nav-item"><a class="nav-link active" href="{{ url_for('security.dashboard') }}"><i class="bi bi-shield-check"></i> Portaria</a></li>
                 {% else %}

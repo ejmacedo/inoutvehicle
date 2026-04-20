@@ -1,0 +1,16 @@
+{% extends "email/base_email.html" %}
+{% block content %}
+<p>Olá, <strong>{{ req.employee.full_name }}</strong>!</p>
+<p>Sua solicitação de veículo foi <span class="badge badge-success">✔ Aprovada</span>.</p>
+
+<div class="info-box">
+  <p><strong>Veículo:</strong> {{ req.vehicle.name }} — {{ req.vehicle.plate }} ({{ req.vehicle.model }})</p>
+  <p><strong>Saída prevista:</strong> {{ req.departure_datetime.strftime('%d/%m/%Y %H:%M') }}</p>
+  <p><strong>Retorno previsto:</strong> {{ req.expected_return_datetime.strftime('%d/%m/%Y %H:%M') }}</p>
+  {% if req.coordinator_notes %}
+  <p><strong>Observação:</strong> {{ req.coordinator_notes }}</p>
+  {% endif %}
+</div>
+
+<p>Apresente-se à portaria no horário previsto com sua identificação.</p>
+{% endblock %}

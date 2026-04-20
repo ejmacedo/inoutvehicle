@@ -5,7 +5,7 @@ from app.employee.forms import VehicleRequestForm
 from app.models import Vehicle, VehicleRequest, RequestStatus, Role
 from app.extensions import db
 from app.decorators import role_required
-from datetime import datetime, timezone
+from app.email_utils import notify_coordinators_new_request
 
 
 @bp.route('/dashboard')
@@ -22,17 +22,15 @@ def dashboard():
 @role_required(Role.EMPLOYEE)
 def new_request():
     form = VehicleRequestForm()
-    form.full_name.data = form.full_name.data or current_user.full_name
-
     vehicles = Vehicle.query.filter_by(is_active=True).all()
-    form.vehicle_id.choices = [(v.id, f'{v.name} - {v.plate} ({v.model})') for v in vehicles]
+    form.vehicle_id.choices = [(v.id, f'{v.name} — {v.plate} ({v.model})') for v in vehicles]
 
     if form.validate_on_submit():
         departure = form.departure_datetime.data
         expected_return = form.expected_return_datetime.data
 
         if expected_return <= departure:
-            flash('A previsão de chegada deve ser após a data de saída.', 'danger')
+            flash('A previsão de chegada deve ser posterior à data de saída.', 'danger')
             return render_template('employee/new_request.html', title='Solicitar Veículo', form=form)
 
         conflict = VehicleRequest.query.filter(
@@ -45,10 +43,10 @@ def new_request():
         if conflict:
             flash(
                 f'O veículo selecionado não está disponível neste período. '
-                f'Ele já está reservado de '
+                f'Já existe uma reserva aprovada de '
                 f'{conflict.departure_datetime.strftime("%d/%m/%Y %H:%M")} até '
                 f'{conflict.expected_return_datetime.strftime("%d/%m/%Y %H:%M")}.',
-                'danger'
+                'danger',
             )
             return render_template('employee/new_request.html', title='Solicitar Veículo', form=form)
 
@@ -63,7 +61,8 @@ def new_request():
         )
         db.session.add(vehicle_request)
         db.session.commit()
-        flash('Solicitação enviada com sucesso! Aguardando aprovação do coordenador.', 'success')
+        notify_coordinators_new_request(vehicle_request)
+        flash('Solicitação enviada! Aguardando aprovação do coordenador.', 'success')
         return redirect(url_for('employee.dashboard'))
 
     form.full_name.data = current_user.full_name

@@ -1,10 +1,10 @@
-from flask import render_template, request
+from flask import render_template, request, redirect, url_for, flash, abort
 from flask_login import login_required
-from app.security import bp
-from app.models import VehicleRequest, RequestStatus
-from app.decorators import role_required
-from app.models import Role
 from datetime import datetime, timezone, date
+from app.security import bp
+from app.models import VehicleRequest, RequestStatus, Role
+from app.extensions import db
+from app.decorators import role_required
 
 
 @bp.route('/dashboard')
@@ -12,31 +12,61 @@ from datetime import datetime, timezone, date
 @role_required(Role.SECURITY)
 def dashboard():
     filter_date = request.args.get('date', date.today().isoformat())
-    filter_status = request.args.get('status', 'all')
-
     try:
         selected_date = date.fromisoformat(filter_date)
     except ValueError:
         selected_date = date.today()
-
-    query = VehicleRequest.query
-
-    if filter_status != 'all':
-        query = query.filter(VehicleRequest.status == filter_status)
-    else:
-        query = query.filter(VehicleRequest.status == RequestStatus.APPROVED)
+        filter_date = selected_date.isoformat()
 
     start = datetime(selected_date.year, selected_date.month, selected_date.day, 0, 0, 0)
     end = datetime(selected_date.year, selected_date.month, selected_date.day, 23, 59, 59)
-    query = query.filter(
-        VehicleRequest.departure_datetime >= start,
-        VehicleRequest.departure_datetime <= end,
+
+    vehicle_requests = (
+        VehicleRequest.query
+        .filter(
+            VehicleRequest.status == RequestStatus.APPROVED,
+            VehicleRequest.departure_datetime >= start,
+            VehicleRequest.departure_datetime <= end,
+        )
+        .order_by(VehicleRequest.departure_datetime.asc())
+        .all()
     )
 
-    vehicle_requests = query.order_by(VehicleRequest.departure_datetime.asc()).all()
+    return render_template(
+        'security/dashboard.html',
+        title='Portaria — Controle de Saídas',
+        vehicle_requests=vehicle_requests,
+        filter_date=filter_date,
+    )
 
-    return render_template('security/dashboard.html',
-                           title='Portaria - Controle de Saídas',
-                           vehicle_requests=vehicle_requests,
-                           filter_date=filter_date,
-                           filter_status=filter_status)
+
+@bp.route('/solicitacao/<int:request_id>/saiu', methods=['POST'])
+@login_required
+@role_required(Role.SECURITY)
+def mark_departed(request_id):
+    vehicle_request = VehicleRequest.query.get_or_404(request_id)
+    if not vehicle_request.is_approved():
+        abort(400)
+    vehicle_request.actual_departure_datetime = datetime.now(timezone.utc)
+    db.session.commit()
+    flash(f'Saída de {vehicle_request.employee.full_name} registrada às '
+          f'{vehicle_request.actual_departure_datetime.strftime("%H:%M")}.', 'success')
+    return redirect(url_for('security.dashboard',
+                            date=vehicle_request.departure_datetime.date().isoformat()))
+
+
+@bp.route('/solicitacao/<int:request_id>/voltou', methods=['POST'])
+@login_required
+@role_required(Role.SECURITY)
+def mark_returned(request_id):
+    vehicle_request = VehicleRequest.query.get_or_404(request_id)
+    if not vehicle_request.actual_departure_datetime:
+        flash('Registre a saída antes de registrar o retorno.', 'warning')
+        return redirect(url_for('security.dashboard',
+                                date=vehicle_request.departure_datetime.date().isoformat()))
+    vehicle_request.actual_return_datetime = datetime.now(timezone.utc)
+    db.session.commit()
+    flash(f'Retorno de {vehicle_request.employee.full_name} registrado às '
+          f'{vehicle_request.actual_return_datetime.strftime("%H:%M")}.', 'success')
+    return redirect(url_for('security.dashboard',
+                            date=vehicle_request.departure_datetime.date().isoformat()))

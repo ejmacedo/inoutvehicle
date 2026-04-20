@@ -17,7 +17,7 @@
                     <th>Usuário</th>
                     <th>E-mail</th>
                     <th>Perfil</th>
-                    <th>Coordenador</th>
+                    <th>Coordenadores</th>
                     <th>Status</th>
                     <th>Ações</th>
                 </tr>
@@ -34,7 +34,13 @@
                         {% elif user.role == 'security' %}<span class="badge bg-info text-dark">Portaria</span>
                         {% else %}<span class="badge bg-secondary">Funcionário</span>{% endif %}
                     </td>
-                    <td>{{ user.coordinator.full_name if user.coordinator else '—' }}</td>
+                    <td>
+                        {% if user.coordinators %}
+                            {% for c in user.coordinators %}
+                                <span class="badge bg-primary me-1">{{ c.full_name }}</span>
+                            {% endfor %}
+                        {% else %}—{% endif %}
+                    </td>
                     <td>
                         {% if user.is_active %}
                             <span class="badge bg-success">Ativo</span>

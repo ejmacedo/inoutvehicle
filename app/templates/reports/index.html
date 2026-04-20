@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h4 class="mb-4"><i class="bi bi-bar-chart-line me-2"></i>Relatórios de Saídas</h4>
+
+{# Filtros #}
+<div class="card mb-4">
+    <div class="card-header fw-semibold"><i class="bi bi-funnel me-1"></i>Filtros</div>
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('reports.index') }}" id="filterForm">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Funcionário</label>
+                    <select name="employee_id" class="form-select">
+                        <option value="">Todos</option>
+                        {% for emp in employees %}
+                        <option value="{{ emp.id }}" {% if args.get('employee_id') == emp.id|string %}selected{% endif %}>
+                            {{ emp.full_name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Veículo</label>
+                    <select name="vehicle_id" class="form-select">
+                        <option value="">Todos</option>
+                        {% for v in vehicles %}
+                        <option value="{{ v.id }}" {% if args.get('vehicle_id') == v.id|string %}selected{% endif %}>
+                            {{ v.name }} — {{ v.plate }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-select">
+                        <option value="">Todos</option>
+                        <option value="pending"  {% if args.get('status') == 'pending'  %}selected{% endif %}>Pendente</option>
+                        <option value="approved" {% if args.get('status') == 'approved' %}selected{% endif %}>Aprovado</option>
+                        <option value="rejected" {% if args.get('status') == 'rejected' %}selected{% endif %}>Recusado</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Data Início</label>
+                    <input type="date" name="date_from" class="form-control" value="{{ args.get('date_from', '') }}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Data Fim</label>
+                    <input type="date" name="date_to" class="form-control" value="{{ args.get('date_to', '') }}">
+                </div>
+            </div>
+            <div class="mt-3 d-flex gap-2">
+                <button type="submit" class="btn btn-dark">
+                    <i class="bi bi-search me-1"></i>Pesquisar
+                </button>
+                <a href="{{ url_for('reports.index') }}" class="btn btn-outline-secondary">Limpar</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+{# Resultados #}
+{% if results is not none %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h6 class="mb-0 text-muted">{{ results|length }} registro(s) encontrado(s)</h6>
+    {% if results %}
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('reports.export_excel', **args) }}" class="btn btn-success btn-sm">
+            <i class="bi bi-file-earmark-excel me-1"></i>Exportar Excel
+        </a>
+        <a href="{{ url_for('reports.export_pdf', **args) }}" class="btn btn-danger btn-sm">
+            <i class="bi bi-file-earmark-pdf me-1"></i>Exportar PDF
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+{% if results %}
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-sm table-hover align-middle mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th>
+                    <th>Funcionário</th>
+                    <th>Veículo</th>
+                    <th>Saída Prevista</th>
+                    <th>Retorno Previsto</th>
+                    <th>Saída Real</th>
+                    <th>Retorno Real</th>
+                    <th>Motivo</th>
+                    <th>Retorna?</th>
+                    <th>Status</th>
+                    <th>Observação</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for req in results %}
+                <tr>
+                    <td class="text-muted small">{{ req.id }}</td>
+                    <td>{{ req.employee.full_name }}</td>
+                    <td>
+                        <strong>{{ req.vehicle.name }}</strong><br>
+                        <small class="text-muted">{{ req.vehicle.plate }}</small>
+                    </td>
+                    <td>{{ req.departure_datetime.strftime('%d/%m/%Y %H:%M') }}</td>
+                    <td>{{ req.expected_return_datetime.strftime('%d/%m/%Y %H:%M') }}</td>
+                    <td>
+                        {% if req.actual_departure_datetime %}
+                            <span class="text-success">{{ req.actual_departure_datetime.strftime('%d/%m/%Y %H:%M') }}</span>
+                        {% else %}<span class="text-muted">—</span>{% endif %}
+                    </td>
+                    <td>
+                        {% if req.actual_return_datetime %}
+                            <span class="text-primary">{{ req.actual_return_datetime.strftime('%d/%m/%Y %H:%M') }}</span>
+                        {% else %}<span class="text-muted">—</span>{% endif %}
+                    </td>
+                    <td><small>{{ req.reason|truncate(60) }}</small></td>
+                    <td>
+                        {% if req.returns_to_company %}<span class="badge bg-success">Sim</span>
+                        {% else %}<span class="badge bg-secondary">Não</span>{% endif %}
+                    </td>
+                    <td>
+                        {% if req.is_pending() %}<span class="badge bg-warning text-dark">Pendente</span>
+                        {% elif req.is_approved() %}<span class="badge bg-success">Aprovado</span>
+                        {% else %}<span class="badge bg-danger">Recusado</span>{% endif %}
+                    </td>
+                    <td><small class="text-muted">{{ req.coordinator_notes or '—' }}</small></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="text-center py-5 text-muted">
+    <i class="bi bi-search display-4"></i>
+    <p class="mt-3">Nenhum resultado encontrado para os filtros selecionados.</p>
+</div>
+{% endif %}
+
+{% else %}
+<div class="text-center py-5 text-muted">
+    <i class="bi bi-bar-chart display-4"></i>
+    <p class="mt-3">Use os filtros acima para pesquisar e exportar relatórios.</p>
+</div>
+{% endif %}
+{% endblock %}

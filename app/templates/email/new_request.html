@@ -1,0 +1,15 @@
+{% extends "email/base_email.html" %}
+{% block content %}
+<p>Olá,</p>
+<p>O(a) funcionário(a) <strong>{{ req.employee.full_name }}</strong> realizou uma nova solicitação de veículo que aguarda sua aprovação.</p>
+
+<div class="info-box">
+  <p><strong>Veículo:</strong> {{ req.vehicle.name }} — {{ req.vehicle.plate }} ({{ req.vehicle.model }})</p>
+  <p><strong>Saída prevista:</strong> {{ req.departure_datetime.strftime('%d/%m/%Y %H:%M') }}</p>
+  <p><strong>Retorno previsto:</strong> {{ req.expected_return_datetime.strftime('%d/%m/%Y %H:%M') }}</p>
+  <p><strong>Motivo:</strong> {{ req.reason }}</p>
+  <p><strong>Retorna à empresa:</strong> {{ 'Sim' if req.returns_to_company else 'Não' }}</p>
+</div>
+
+<p>Acesse o sistema para aprovar ou recusar esta solicitação.</p>
+{% endblock %}
