@@ -23,6 +23,7 @@ class UserForm(FlaskForm):
         ('coordinator', 'Coordenador'),
         ('security', 'Portaria'),
         ('admin', 'Administrador'),
+        ('driver', 'Motorista'),
     ], validators=[DataRequired(message='Selecione um perfil.')])
     coordinator_ids = SelectMultipleField(
         'Coordenadores Responsáveis',
@@ -61,6 +62,7 @@ class EditUserForm(FlaskForm):
         ('coordinator', 'Coordenador'),
         ('security', 'Portaria'),
         ('admin', 'Administrador'),
+        ('driver', 'Motorista'),
     ], validators=[DataRequired(message='Selecione um perfil.')])
     coordinator_ids = SelectMultipleField(
         'Coordenadores Responsáveis',

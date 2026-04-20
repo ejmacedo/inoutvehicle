@@ -4,45 +4,41 @@
 <div class="row justify-content-center">
     <div class="col-md-7">
         <div class="d-flex align-items-center mb-4">
-            <a href="{{ url_for('employee.dashboard') }}" class="btn btn-outline-secondary btn-sm me-3">
+            <a href="{{ url_for('coordinator.driver_reservations') }}" class="btn btn-outline-secondary btn-sm me-3">
                 <i class="bi bi-arrow-left"></i>
             </a>
-            <h4 class="mb-0"><i class="bi bi-plus-circle me-2"></i>Solicitar Veículo</h4>
+            <h4 class="mb-0"><i class="bi bi-calendar-plus me-2"></i>Nova Reserva para Motorista</h4>
         </div>
 
         <div class="card">
             <div class="card-body p-4">
-                <form method="POST" action="{{ url_for('employee.new_request') }}" novalidate>
+                <form method="POST" action="{{ url_for('coordinator.new_driver_reservation') }}" novalidate>
                     {{ form.hidden_tag() }}
 
                     <div class="mb-3">
-                        {{ form.full_name.label(class="form-label fw-semibold") }}
-                        {{ form.full_name(class="form-control", readonly=true) }}
+                        {{ form.driver_id.label(class="form-label fw-semibold") }}
+                        {{ form.driver_id(class="form-select" + (" is-invalid" if form.driver_id.errors else "")) }}
+                        {% for error in form.driver_id.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
                     </div>
 
                     <div class="mb-3">
                         {{ form.vehicle_id.label(class="form-label fw-semibold") }}
-                        <select name="vehicle_id" id="vehicle_id"
-                                class="form-select{{ ' is-invalid' if form.vehicle_id.errors else '' }}" required>
+                        <select name="vehicle_id" class="form-select{{ ' is-invalid' if form.vehicle_id.errors else '' }}" required>
                             {% for v in vehicles %}
                             {% set is_unavail = v.id in unavailable %}
                             <option value="{{ v.id }}"
                                 {{ 'selected' if form.vehicle_id.data == v.id else '' }}
-                                {{ 'disabled' if is_unavail else '' }}
-                                class="{{ 'vehicle-unavailable' if is_unavail else '' }}">
-                                {{ v.name }} — {{ v.plate }} ({{ v.model }}){{ ' — INDISPONÍVEL' if is_unavail else '' }}
+                                {{ 'disabled' if is_unavail else '' }}>
+                                {{ v.name }} — {{ v.plate }} ({{ v.model }}){{ ' ⚠ INDISPONÍVEL' if is_unavail else '' }}
                             </option>
                             {% endfor %}
                         </select>
                         {% for error in form.vehicle_id.errors %}
                             <div class="invalid-feedback">{{ error }}</div>
                         {% endfor %}
-                        {% if unavailable %}
-                        <div class="form-text text-muted">
-                            <i class="bi bi-info-circle me-1"></i>
-                            Veículos marcados como INDISPONÍVEL estão em uso até o retorno ser registrado pela portaria.
-                        </div>
-                        {% endif %}
+                        <div class="form-text">Veículos marcados com ⚠ estão em uso e não podem ser selecionados.</div>
                     </div>
 
                     <div class="row g-3 mb-3">
@@ -62,7 +58,7 @@
                         </div>
                     </div>
 
-                    <div class="mb-3">
+                    <div class="mb-4">
                         {{ form.reason.label(class="form-label fw-semibold") }}
                         {{ form.reason(class="form-control" + (" is-invalid" if form.reason.errors else ""), rows=3, placeholder="Descreva o motivo da saída...") }}
                         {% for error in form.reason.errors %}
@@ -70,12 +66,12 @@
                         {% endfor %}
                     </div>
 
-                    <div class="mb-4 form-check form-switch">
-                        {{ form.returns_to_company(class="form-check-input", role="switch") }}
-                        {{ form.returns_to_company.label(class="form-check-label fw-semibold") }}
+                    <div class="alert alert-info small py-2">
+                        <i class="bi bi-info-circle me-1"></i>
+                        A reserva é criada automaticamente como <strong>aprovada</strong> pelo coordenador.
                     </div>
 
-                    <div class="d-grid">
+                    <div class="d-grid mt-3">
                         {{ form.submit(class="btn btn-dark btn-lg") }}
                     </div>
                 </form>

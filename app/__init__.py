@@ -37,6 +37,9 @@ def create_app(config_class=Config):
     from app.reports import bp as reports_bp
     app.register_blueprint(reports_bp)
 
+    from app.profile import bp as profile_bp
+    app.register_blueprint(profile_bp)
+
     from flask import render_template
 
     @app.errorhandler(403)

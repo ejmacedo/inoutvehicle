@@ -9,9 +9,9 @@ class Role:
     COORDINATOR = 'coordinator'
     EMPLOYEE = 'employee'
     SECURITY = 'security'
+    DRIVER = 'driver'
 
 
-# Tabela associativa: funcionário ↔ coordenadores (N:N)
 employee_coordinators = db.Table(
     'employee_coordinators',
     db.Column('employee_id', db.Integer, db.ForeignKey('users.id'), primary_key=True),
@@ -31,7 +31,6 @@ class User(UserMixin, db.Model):
     is_active = db.Column(db.Boolean, default=True, nullable=False)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
-    # Funcionário → lista de coordenadores responsáveis
     coordinators = db.relationship(
         'User',
         secondary=employee_coordinators,
@@ -54,17 +53,11 @@ class User(UserMixin, db.Model):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-    def is_admin(self):
-        return self.role == Role.ADMIN
-
-    def is_coordinator(self):
-        return self.role == Role.COORDINATOR
-
-    def is_employee(self):
-        return self.role == Role.EMPLOYEE
-
-    def is_security(self):
-        return self.role == Role.SECURITY
+    def is_admin(self):       return self.role == Role.ADMIN
+    def is_coordinator(self): return self.role == Role.COORDINATOR
+    def is_employee(self):    return self.role == Role.EMPLOYEE
+    def is_security(self):    return self.role == Role.SECURITY
+    def is_driver(self):      return self.role == Role.DRIVER
 
     def __repr__(self):
         return f'<User {self.username}>'
@@ -80,6 +73,7 @@ class Vehicle(db.Model):
     is_active = db.Column(db.Boolean, default=True, nullable=False)
 
     requests = db.relationship('VehicleRequest', backref='vehicle', lazy='dynamic')
+    driver_reservations = db.relationship('DriverReservation', backref='vehicle', lazy='dynamic')
 
     def __repr__(self):
         return f'<Vehicle {self.plate}>'
@@ -98,39 +92,63 @@ class VehicleRequest(db.Model):
     employee_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     vehicle_id = db.Column(db.Integer, db.ForeignKey('vehicles.id'), nullable=False)
 
-    # Datas previstas (preenchidas pelo funcionário)
     departure_datetime = db.Column(db.DateTime, nullable=False)
     expected_return_datetime = db.Column(db.DateTime, nullable=False)
 
-    # Datas reais (confirmadas pela portaria)
     actual_departure_datetime = db.Column(db.DateTime, nullable=True)
     actual_return_datetime = db.Column(db.DateTime, nullable=True)
 
-    # Odômetro na saída (preenchido pela portaria)
     odometer_departure = db.Column(db.Integer, nullable=True)
+    odometer_return = db.Column(db.Integer, nullable=True)
 
     reason = db.Column(db.Text, nullable=False)
     returns_to_company = db.Column(db.Boolean, nullable=False, default=True)
     status = db.Column(db.String(20), nullable=False, default=RequestStatus.PENDING)
     coordinator_notes = db.Column(db.Text, nullable=True)
+    portaria_obs = db.Column(db.Text, nullable=True)
+
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
-    updated_at = db.Column(
-        db.DateTime,
-        default=lambda: datetime.now(timezone.utc),
-        onupdate=lambda: datetime.now(timezone.utc),
-    )
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc),
+                           onupdate=lambda: datetime.now(timezone.utc))
 
-    def is_pending(self):
-        return self.status == RequestStatus.PENDING
-
-    def is_approved(self):
-        return self.status == RequestStatus.APPROVED
-
-    def is_rejected(self):
-        return self.status == RequestStatus.REJECTED
+    def is_pending(self):  return self.status == RequestStatus.PENDING
+    def is_approved(self): return self.status == RequestStatus.APPROVED
+    def is_rejected(self): return self.status == RequestStatus.REJECTED
 
     def __repr__(self):
         return f'<VehicleRequest {self.id} - {self.status}>'
+
+
+class DriverReservation(db.Model):
+    """Reserva criada diretamente pelo coordenador para um motorista. Auto-aprovada."""
+    __tablename__ = 'driver_reservations'
+
+    id = db.Column(db.Integer, primary_key=True)
+    coordinator_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    driver_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    vehicle_id = db.Column(db.Integer, db.ForeignKey('vehicles.id'), nullable=False)
+
+    departure_datetime = db.Column(db.DateTime, nullable=False)
+    expected_return_datetime = db.Column(db.DateTime, nullable=False)
+
+    actual_departure_datetime = db.Column(db.DateTime, nullable=True)
+    actual_return_datetime = db.Column(db.DateTime, nullable=True)
+
+    odometer_departure = db.Column(db.Integer, nullable=True)
+    odometer_return = db.Column(db.Integer, nullable=True)
+
+    reason = db.Column(db.Text, nullable=False)
+    portaria_obs = db.Column(db.Text, nullable=True)
+
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    coordinator = db.relationship('User', foreign_keys=[coordinator_id],
+                                  backref='reservations_created')
+    driver = db.relationship('User', foreign_keys=[driver_id],
+                             backref='driver_reservations')
+
+    def __repr__(self):
+        return f'<DriverReservation {self.id}>'
 
 
 @login_manager.user_loader
