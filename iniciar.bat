@@ -10,7 +10,12 @@ echo.
 
 cd /d "%~dp0"
 call .\.venv\Scripts\activate
-cd inoutvehicle
+if errorlevel 1 (
+    echo  [ERRO] Ambiente virtual nao encontrado.
+    echo  Execute instalar.bat primeiro.
+    pause
+    exit /b 1
+)
 
 echo  Servidor rodando em: http://127.0.0.1:5000
 echo  Para encerrar pressione Ctrl+C

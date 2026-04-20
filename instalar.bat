@@ -27,16 +27,17 @@ if errorlevel 1 (
     exit /b 1
 )
 
-:: Sobe para a pasta pai (onde o venv será criado)
-cd /d "%~dp0.."
+:: Entra na pasta do projeto (onde este .bat está)
+cd /d "%~dp0"
 
-echo  [1/4] Criando ambiente virtual...
+echo  [1/4] Criando ambiente virtual dentro do projeto...
 python -m venv .venv
 if errorlevel 1 ( echo  [ERRO] Falha ao criar ambiente virtual. & pause & exit /b 1 )
 
 echo  [2/4] Instalando dependencias...
 call .\.venv\Scripts\activate
-cd inoutvehicle
+if errorlevel 1 ( echo  [ERRO] Falha ao ativar ambiente virtual. & pause & exit /b 1 )
+
 pip install -r requirements.txt --quiet
 if errorlevel 1 ( echo  [ERRO] Falha ao instalar dependencias. & pause & exit /b 1 )
 

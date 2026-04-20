@@ -10,7 +10,12 @@ echo.
 
 cd /d "%~dp0"
 call .\.venv\Scripts\activate
-cd inoutvehicle
+if errorlevel 1 (
+    echo  [ERRO] Ambiente virtual nao encontrado.
+    echo  Execute instalar.bat primeiro.
+    pause
+    exit /b 1
+)
 
 echo  [1/4] Baixando atualizacoes do GitHub...
 git pull origin main
