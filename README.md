@@ -116,3 +116,4 @@ MAIL_DEFAULT_SENDER=InOut Veículos <seu-email@gmail.com>
 | **v0.1** | Versão inicial: login, solicitação, aprovação, portaria, admin | ✅ Sim (instalação nova) |
 | **v0.2** | Múltiplos coordenadores, saída/retorno real, e-mail, relatórios Excel/PDF | ✅ Sim |
 | **v0.3** | Toasts, recuperação de senha, validações pt-BR, odômetro na saída | ✅ Sim |
+| **v0.4** | Perfil motorista, reservas pelo coordenador, troca de veículo na aprovação, disponibilidade real, portaria unificada com filtros, KM no retorno, data+hora reais, OBS 30 min, trocar senha | ⚠️ `atualizar.bat` faz a migração automática — sem perda de dados |

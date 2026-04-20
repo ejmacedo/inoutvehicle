@@ -13,12 +13,14 @@
         .sidebar .nav-link { color: #adb5bd; border-radius: 6px; margin-bottom: 2px; }
         .sidebar .nav-link:hover, .sidebar .nav-link.active { color: #fff; background: #343a40; }
         .sidebar .nav-link i { width: 20px; }
+        .sidebar .nav-section { color: #6c757d; font-size: .72rem; text-transform: uppercase;
+                                letter-spacing: 1px; padding: 12px 8px 4px; }
         .card { border: none; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
         .badge-pending { background-color: #ffc107; color: #212529; }
         .table th { font-size: .85rem; text-transform: uppercase; letter-spacing: .5px; }
-        /* Toasts */
+        .vehicle-unavailable { opacity: .45; pointer-events: none; }
         .toast-container { z-index: 1090; }
-        .toast { min-width: 280px; }
+        .toast { min-width: 290px; }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
@@ -34,21 +36,34 @@
         </button>
         <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
             <ul class="navbar-nav align-items-center">
-                <li class="nav-item me-3">
-                    <span class="text-secondary small">
-                        <i class="bi bi-person-circle me-1"></i>{{ current_user.full_name }}
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center gap-2"
+                       href="#" role="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-person-circle"></i>
+                        <span class="small">{{ current_user.full_name }}</span>
                         <span class="badge bg-secondary ms-1">
                             {% if current_user.is_admin() %}Admin
                             {% elif current_user.is_coordinator() %}Coordenador
                             {% elif current_user.is_security() %}Portaria
+                            {% elif current_user.is_driver() %}Motorista
                             {% else %}Funcionário{% endif %}
                         </span>
-                    </span>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('auth.logout') }}">
-                        <i class="bi bi-box-arrow-right"></i> Sair
                     </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        {% if not current_user.is_security() %}
+                        <li>
+                            <a class="dropdown-item" href="{{ url_for('profile.change_password') }}">
+                                <i class="bi bi-key me-2"></i>Trocar Senha
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        {% endif %}
+                        <li>
+                            <a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}">
+                                <i class="bi bi-box-arrow-right me-2"></i>Sair
+                            </a>
+                        </li>
+                    </ul>
                 </li>
             </ul>
         </div>
@@ -62,21 +77,32 @@
         <nav class="col-md-2 d-none d-md-block sidebar py-3 px-2">
             <ul class="nav flex-column">
                 {% if current_user.is_admin() %}
+                <li class="nav-section">Administração</li>
                 <li class="nav-item"><a class="nav-link {% if request.endpoint == 'admin.dashboard' %}active{% endif %}" href="{{ url_for('admin.dashboard') }}"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
                 <li class="nav-item"><a class="nav-link {% if request.endpoint and 'user' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.users') }}"><i class="bi bi-people"></i> Usuários</a></li>
                 <li class="nav-item"><a class="nav-link {% if request.endpoint and 'vehicle' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.vehicles') }}"><i class="bi bi-truck"></i> Veículos</a></li>
                 <li class="nav-item"><a class="nav-link {% if request.endpoint and 'reports' in request.endpoint %}active{% endif %}" href="{{ url_for('reports.index') }}"><i class="bi bi-bar-chart-line"></i> Relatórios</a></li>
+
                 {% elif current_user.is_coordinator() %}
-                <li class="nav-item"><a class="nav-link {% if request.endpoint == 'coordinator.dashboard' %}active{% endif %}" href="{{ url_for('coordinator.dashboard') }}"><i class="bi bi-clipboard-check"></i> Solicitações</a></li>
+                <li class="nav-section">Solicitações</li>
+                <li class="nav-item"><a class="nav-link {% if request.endpoint == 'coordinator.dashboard' %}active{% endif %}" href="{{ url_for('coordinator.dashboard') }}"><i class="bi bi-clipboard-check"></i> Aprovar / Recusar</a></li>
+                <li class="nav-section">Equipe</li>
+                <li class="nav-item"><a class="nav-link {% if request.endpoint and 'employee' in request.endpoint %}active{% endif %}" href="{{ url_for('coordinator.employees') }}"><i class="bi bi-person-badge"></i> Funcionários</a></li>
+                <li class="nav-item"><a class="nav-link {% if request.endpoint == 'coordinator.drivers' or request.endpoint == 'coordinator.create_driver' or request.endpoint == 'coordinator.edit_driver' %}active{% endif %}" href="{{ url_for('coordinator.drivers') }}"><i class="bi bi-person-workspace"></i> Motoristas</a></li>
+                <li class="nav-item"><a class="nav-link {% if 'driver_reservation' in (request.endpoint or '') %}active{% endif %}" href="{{ url_for('coordinator.driver_reservations') }}"><i class="bi bi-calendar-plus"></i> Reservas Motorista</a></li>
+                <li class="nav-section">Relatórios</li>
                 <li class="nav-item"><a class="nav-link {% if request.endpoint and 'reports' in request.endpoint %}active{% endif %}" href="{{ url_for('reports.index') }}"><i class="bi bi-bar-chart-line"></i> Relatórios</a></li>
+
                 {% elif current_user.is_security() %}
                 <li class="nav-item"><a class="nav-link active" href="{{ url_for('security.dashboard') }}"><i class="bi bi-shield-check"></i> Portaria</a></li>
+
                 {% else %}
                 <li class="nav-item"><a class="nav-link {% if request.endpoint == 'employee.dashboard' %}active{% endif %}" href="{{ url_for('employee.dashboard') }}"><i class="bi bi-list-ul"></i> Minhas Solicitações</a></li>
                 <li class="nav-item"><a class="nav-link {% if request.endpoint == 'employee.new_request' %}active{% endif %}" href="{{ url_for('employee.new_request') }}"><i class="bi bi-plus-circle"></i> Nova Solicitação</a></li>
                 {% endif %}
             </ul>
         </nav>
+
         <main class="col-md-10 ms-sm-auto px-4 py-4">
             {% block content %}{% endblock %}
         </main>
@@ -88,7 +114,7 @@
 </div>
 {% endif %}
 
-{# ── Toast container (flash messages para todos os perfis) ──────────────── #}
+{# ── Toasts ─────────────────────────────────────────────────────────────── #}
 <div class="toast-container position-fixed bottom-0 end-0 p-3">
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% for category, message in messages %}
@@ -117,10 +143,8 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // Inicializa e exibe todos os toasts
     document.querySelectorAll('.toast').forEach(function(el) {
-        var toast = new bootstrap.Toast(el);
-        toast.show();
+        new bootstrap.Toast(el).show();
     });
 </script>
 {% block extra_js %}{% endblock %}

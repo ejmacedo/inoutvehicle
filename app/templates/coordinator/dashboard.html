@@ -13,7 +13,7 @@
     <div class="card mb-3">
         <div class="card-body">
             <div class="row align-items-start">
-                <div class="col-md-8">
+                <div class="col-md-7">
                     <h6 class="fw-bold mb-1">
                         <i class="bi bi-person me-1"></i>{{ req.employee.full_name }}
                         <small class="text-muted fw-normal ms-2">@{{ req.employee.username }}</small>
@@ -21,6 +21,9 @@
                     <p class="mb-1">
                         <i class="bi bi-truck me-1 text-muted"></i>
                         <strong>{{ req.vehicle.name }}</strong> — {{ req.vehicle.plate }} ({{ req.vehicle.model }})
+                        {% if req.vehicle_id in unavailable %}
+                            <span class="badge bg-warning text-dark ms-1"><i class="bi bi-exclamation-triangle"></i> Indisponível</span>
+                        {% endif %}
                     </p>
                     <p class="mb-1 small text-muted">
                         <i class="bi bi-calendar-event me-1"></i>
@@ -41,14 +44,29 @@
                         &nbsp;|&nbsp; Solicitado em {{ req.created_at.strftime('%d/%m/%Y %H:%M') }}
                     </p>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-5">
+                    {# ── APROVAR ── #}
                     <form method="POST" action="{{ url_for('coordinator.approve', request_id=req.id) }}" class="mb-2">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <label class="form-label fw-semibold small mb-1">Veículo aprovado</label>
+                        <select name="vehicle_id" class="form-select form-select-sm mb-2" required>
+                            {% for v in vehicles %}
+                            {% set is_unavail = v.id in unavailable and v.id != req.vehicle_id %}
+                            <option value="{{ v.id }}"
+                                {{ 'selected' if v.id == req.vehicle_id else '' }}
+                                {{ 'disabled' if is_unavail else '' }}
+                                class="{{ 'text-muted' if is_unavail else '' }}">
+                                {{ v.name }} — {{ v.plate }}
+                                {% if v.id in unavailable and v.id != req.vehicle_id %} ⚠ INDISPONÍVEL{% endif %}
+                            </option>
+                            {% endfor %}
+                        </select>
                         <input type="text" name="notes" class="form-control form-control-sm mb-2" placeholder="Observação (opcional)">
                         <button type="submit" class="btn btn-success btn-sm w-100">
                             <i class="bi bi-check-lg me-1"></i>Aprovar
                         </button>
                     </form>
+                    {# ── RECUSAR ── #}
                     <form method="POST" action="{{ url_for('coordinator.reject', request_id=req.id) }}">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <input type="text" name="notes" class="form-control form-control-sm mb-2" placeholder="Motivo da recusa (obrigatório)">

@@ -1,29 +1,61 @@
 {% extends "base.html" %}
 
+{% block extra_css %}
+<style>
+    .saiu-form .form-text { display: block; }
+</style>
+{% endblock %}
+
 {% block content %}
 <h4 class="mb-4"><i class="bi bi-shield-check me-2"></i>Portaria — Controle de Saídas</h4>
 
+{# ── Filtros ─────────────────────────────────────────────────────────────────── #}
 <div class="card mb-4">
     <div class="card-body">
         <form method="GET" action="{{ url_for('security.dashboard') }}" class="row g-3 align-items-end">
             <div class="col-md-4">
-                <label class="form-label fw-semibold">Data</label>
-                <input type="date" name="date" class="form-control" value="{{ filter_date }}">
+                <label class="form-label fw-semibold small">Funcionário / Motorista</label>
+                <input type="text" name="name" class="form-control form-control-sm"
+                       placeholder="Nome..." value="{{ args.get('name', '') }}">
             </div>
-            <div class="col-md-2">
-                <button type="submit" class="btn btn-dark w-100">
-                    <i class="bi bi-search me-1"></i>Filtrar
+            <div class="col-md-3">
+                <label class="form-label fw-semibold small">Veículo</label>
+                <select name="vehicle_id" class="form-select form-select-sm">
+                    <option value="">Todos</option>
+                    {% for v in vehicles %}
+                    <option value="{{ v.id }}" {{ 'selected' if args.get('vehicle_id') == v.id|string else '' }}>
+                        {{ v.name }} — {{ v.plate }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-semibold small">Data de Saída</label>
+                <input type="date" name="date" class="form-control form-control-sm"
+                       value="{{ args.get('date', '') }}">
+            </div>
+            <div class="col-md-1">
+                <button type="submit" class="btn btn-dark btn-sm w-100">
+                    <i class="bi bi-search"></i>
                 </button>
             </div>
-            <div class="col-md-2">
-                <a href="{{ url_for('security.dashboard') }}" class="btn btn-outline-secondary w-100">Hoje</a>
+            <div class="col-md-1">
+                <a href="{{ url_for('security.dashboard') }}" class="btn btn-outline-secondary btn-sm w-100">
+                    <i class="bi bi-x-lg"></i>
+                </a>
             </div>
         </form>
     </div>
 </div>
 
-{% if vehicle_requests %}
-<div class="card">
+{# ── Solicitações de Funcionários ────────────────────────────────────────────── #}
+<h5 class="mb-3">
+    <i class="bi bi-person-badge me-1"></i> Solicitações de Funcionários
+    <span class="badge bg-secondary ms-1">{{ vr_list|length }}</span>
+</h5>
+
+{% if vr_list %}
+<div class="card mb-4">
     <div class="table-responsive">
         <table class="table table-hover align-middle mb-0">
             <thead class="table-dark">
@@ -32,93 +64,89 @@
                     <th>Funcionário</th>
                     <th>Veículo</th>
                     <th>Saída Prevista</th>
-                    <th>Retorno Previsto</th>
                     <th>Saída Real</th>
-                    <th>Odômetro (km)</th>
+                    <th>KM Saída</th>
+                    <th>Retorno Previsto</th>
                     <th>Retorno Real</th>
-                    <th>Motivo</th>
-                    <th>Retorna?</th>
-                    <th class="text-center" style="min-width:230px">Ação</th>
+                    <th>KM Retorno</th>
+                    <th>OBS</th>
+                    <th class="text-center" style="min-width:220px">Ação</th>
                 </tr>
             </thead>
             <tbody>
-                {% for req in vehicle_requests %}
+                {% for req in vr_list %}
                 <tr>
                     <td class="text-muted small">{{ req.id }}</td>
-                    <td><strong>{{ req.employee.full_name }}</strong></td>
+                    <td>
+                        <strong>{{ req.employee.full_name }}</strong>
+                        {% if req.returns_to_company %}
+                            <br><span class="badge bg-success badge-sm">Retorna</span>
+                        {% endif %}
+                    </td>
                     <td>
                         <strong>{{ req.vehicle.name }}</strong><br>
                         <small class="text-muted">{{ req.vehicle.plate }}</small>
                     </td>
-                    <td>{{ req.departure_datetime.strftime('%d/%m/%Y %H:%M') }}</td>
-                    <td>{{ req.expected_return_datetime.strftime('%d/%m/%Y %H:%M') }}</td>
-
-                    {# Saída real #}
-                    <td>
+                    <td class="small">{{ req.departure_datetime.strftime('%d/%m/%Y %H:%M') }}</td>
+                    <td class="small">
                         {% if req.actual_departure_datetime %}
                             <span class="text-success fw-semibold">
-                                <i class="bi bi-check-circle me-1"></i>
-                                {{ req.actual_departure_datetime.strftime('%H:%M') }}
+                                {{ req.actual_departure_datetime.strftime('%d/%m/%Y %H:%M') }}
                             </span>
                         {% else %}
                             <span class="text-muted">—</span>
                         {% endif %}
                     </td>
-
-                    {# Odômetro #}
-                    <td>
+                    <td class="small">
                         {% if req.odometer_departure %}
-                            <span class="fw-semibold">{{ '{:,}'.format(req.odometer_departure).replace(',', '.') }} km</span>
+                            {{ '{:,}'.format(req.odometer_departure).replace(',', '.') }} km
                         {% else %}
                             <span class="text-muted">—</span>
                         {% endif %}
                     </td>
-
-                    {# Retorno real #}
-                    <td>
+                    <td class="small">{{ req.expected_return_datetime.strftime('%d/%m/%Y %H:%M') }}</td>
+                    <td class="small">
                         {% if req.actual_return_datetime %}
                             <span class="text-primary fw-semibold">
-                                <i class="bi bi-check-circle me-1"></i>
-                                {{ req.actual_return_datetime.strftime('%H:%M') }}
+                                {{ req.actual_return_datetime.strftime('%d/%m/%Y %H:%M') }}
                             </span>
                         {% else %}
                             <span class="text-muted">—</span>
                         {% endif %}
                     </td>
-
-                    <td><small>{{ req.reason|truncate(50) }}</small></td>
-                    <td>
-                        {% if req.returns_to_company %}
-                            <span class="badge bg-success">Sim</span>
+                    <td class="small">
+                        {% if req.odometer_return %}
+                            {{ '{:,}'.format(req.odometer_return).replace(',', '.') }} km
                         {% else %}
-                            <span class="badge bg-secondary">Não</span>
+                            <span class="text-muted">—</span>
                         {% endif %}
                     </td>
-
-                    {# Ações #}
+                    <td class="small">
+                        {% if req.portaria_obs %}
+                            <span class="text-warning" title="{{ req.portaria_obs }}">
+                                <i class="bi bi-exclamation-triangle me-1"></i>{{ req.portaria_obs|truncate(40) }}
+                            </span>
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
                     <td>
                         {% if not req.actual_departure_datetime %}
-                        {# ── SAIU: exige KM antes de habilitar ── #}
+                        {# ── SAIU ── #}
                         <form method="POST"
                               action="{{ url_for('security.mark_departed', request_id=req.id) }}"
                               class="saiu-form">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <div class="input-group input-group-sm">
-                                <input type="number"
-                                       name="odometer"
-                                       class="form-control km-input"
-                                       placeholder="KM atual do veículo"
-                                       min="1"
-                                       title="Informe a quilometragem atual do veículo">
-                                <button type="submit"
-                                        class="btn btn-success saiu-btn"
-                                        disabled
+                                <input type="number" name="odometer" class="form-control km-input"
+                                       placeholder="KM saída" min="1">
+                                <button type="submit" class="btn btn-success saiu-btn" disabled
                                         onclick="return confirm('Confirmar saída de {{ req.employee.full_name }}?')">
-                                    <i class="bi bi-box-arrow-right me-1"></i>SAIU
+                                    <i class="bi bi-box-arrow-right"></i> SAIU
                                 </button>
                             </div>
-                            <div class="form-text text-warning small mt-1">
-                                <i class="bi bi-info-circle me-1"></i>Preencha o KM para liberar a saída
+                            <div class="form-text text-warning small">
+                                <i class="bi bi-info-circle me-1"></i>Informe o KM
                             </div>
                         </form>
 
@@ -126,11 +154,19 @@
                         {# ── VOLTOU ── #}
                         <form method="POST"
                               action="{{ url_for('security.mark_returned', request_id=req.id) }}"
-                              onsubmit="return confirm('Confirmar retorno de {{ req.employee.full_name }}?')">
+                              class="saiu-form">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                            <button type="submit" class="btn btn-primary btn-sm px-3 w-100">
-                                <i class="bi bi-box-arrow-in-left me-1"></i>VOLTOU
-                            </button>
+                            <div class="input-group input-group-sm">
+                                <input type="number" name="odometer" class="form-control km-input"
+                                       placeholder="KM retorno" min="1">
+                                <button type="submit" class="btn btn-primary saiu-btn" disabled
+                                        onclick="return confirm('Confirmar retorno de {{ req.employee.full_name }}?')">
+                                    <i class="bi bi-box-arrow-in-left"></i> VOLTOU
+                                </button>
+                            </div>
+                            <div class="form-text text-warning small">
+                                <i class="bi bi-info-circle me-1"></i>Informe o KM
+                            </div>
                         </form>
 
                         {% else %}
@@ -143,24 +179,151 @@
         </table>
     </div>
 </div>
-<p class="text-muted small mt-2">{{ vehicle_requests|length }} autorização(ões) para esta data.</p>
-
 {% else %}
-<div class="text-center py-5 text-muted">
-    <i class="bi bi-inbox display-4"></i>
-    <p class="mt-3">Nenhuma autorização de saída para esta data.</p>
+<div class="text-center py-3 text-muted mb-4">
+    <i class="bi bi-inbox"></i> Nenhuma solicitação de funcionário encontrada.
+</div>
+{% endif %}
+
+{# ── Reservas de Motoristas ──────────────────────────────────────────────────── #}
+<h5 class="mb-3">
+    <i class="bi bi-person-workspace me-1"></i> Reservas de Motoristas
+    <span class="badge bg-secondary ms-1">{{ dr_list|length }}</span>
+</h5>
+
+{% if dr_list %}
+<div class="card mb-4">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th>
+                    <th>Motorista</th>
+                    <th>Veículo</th>
+                    <th>Saída Prevista</th>
+                    <th>Saída Real</th>
+                    <th>KM Saída</th>
+                    <th>Retorno Previsto</th>
+                    <th>Retorno Real</th>
+                    <th>KM Retorno</th>
+                    <th>OBS</th>
+                    <th class="text-center" style="min-width:220px">Ação</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for dr in dr_list %}
+                <tr>
+                    <td class="text-muted small">{{ dr.id }}</td>
+                    <td><strong>{{ dr.driver.full_name }}</strong></td>
+                    <td>
+                        <strong>{{ dr.vehicle.name }}</strong><br>
+                        <small class="text-muted">{{ dr.vehicle.plate }}</small>
+                    </td>
+                    <td class="small">{{ dr.departure_datetime.strftime('%d/%m/%Y %H:%M') }}</td>
+                    <td class="small">
+                        {% if dr.actual_departure_datetime %}
+                            <span class="text-success fw-semibold">
+                                {{ dr.actual_departure_datetime.strftime('%d/%m/%Y %H:%M') }}
+                            </span>
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td class="small">
+                        {% if dr.odometer_departure %}
+                            {{ '{:,}'.format(dr.odometer_departure).replace(',', '.') }} km
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td class="small">{{ dr.expected_return_datetime.strftime('%d/%m/%Y %H:%M') }}</td>
+                    <td class="small">
+                        {% if dr.actual_return_datetime %}
+                            <span class="text-primary fw-semibold">
+                                {{ dr.actual_return_datetime.strftime('%d/%m/%Y %H:%M') }}
+                            </span>
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td class="small">
+                        {% if dr.odometer_return %}
+                            {{ '{:,}'.format(dr.odometer_return).replace(',', '.') }} km
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td class="small">
+                        {% if dr.portaria_obs %}
+                            <span class="text-warning" title="{{ dr.portaria_obs }}">
+                                <i class="bi bi-exclamation-triangle me-1"></i>{{ dr.portaria_obs|truncate(40) }}
+                            </span>
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if not dr.actual_departure_datetime %}
+                        {# ── SAIU ── #}
+                        <form method="POST"
+                              action="{{ url_for('security.driver_departed', reservation_id=dr.id) }}"
+                              class="saiu-form">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <div class="input-group input-group-sm">
+                                <input type="number" name="odometer" class="form-control km-input"
+                                       placeholder="KM saída" min="1">
+                                <button type="submit" class="btn btn-success saiu-btn" disabled
+                                        onclick="return confirm('Confirmar saída de {{ dr.driver.full_name }}?')">
+                                    <i class="bi bi-box-arrow-right"></i> SAIU
+                                </button>
+                            </div>
+                            <div class="form-text text-warning small">
+                                <i class="bi bi-info-circle me-1"></i>Informe o KM
+                            </div>
+                        </form>
+
+                        {% elif not dr.actual_return_datetime %}
+                        {# ── VOLTOU ── #}
+                        <form method="POST"
+                              action="{{ url_for('security.driver_returned', reservation_id=dr.id) }}"
+                              class="saiu-form">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <div class="input-group input-group-sm">
+                                <input type="number" name="odometer" class="form-control km-input"
+                                       placeholder="KM retorno" min="1">
+                                <button type="submit" class="btn btn-primary saiu-btn" disabled
+                                        onclick="return confirm('Confirmar retorno de {{ dr.driver.full_name }}?')">
+                                    <i class="bi bi-box-arrow-in-left"></i> VOLTOU
+                                </button>
+                            </div>
+                            <div class="form-text text-warning small">
+                                <i class="bi bi-info-circle me-1"></i>Informe o KM
+                            </div>
+                        </form>
+
+                        {% else %}
+                        <span class="badge bg-secondary">Concluído</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="text-center py-3 text-muted">
+    <i class="bi bi-inbox"></i> Nenhuma reserva de motorista encontrada.
 </div>
 {% endif %}
 {% endblock %}
 
 {% block extra_js %}
 <script>
-    // Habilita o botão SAIU apenas quando o campo de KM estiver preenchido
     document.querySelectorAll('.saiu-form').forEach(function(form) {
         var input = form.querySelector('.km-input');
         var btn   = form.querySelector('.saiu-btn');
         var hint  = form.querySelector('.form-text');
-
         input.addEventListener('input', function() {
             var val = parseInt(this.value);
             var ok  = !isNaN(val) && val > 0;
