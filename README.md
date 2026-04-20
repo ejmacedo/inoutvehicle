@@ -7,154 +7,81 @@ Desenvolvido com **Flask** + **SQLite**, rodando localmente via ambiente virtual
 
 ## Pré-requisitos
 
-- [Python 3.10+](https://www.python.org/downloads/) instalado e adicionado ao PATH
-- Acesso ao prompt de comando (CMD) ou PowerShell
+Instale os dois programas abaixo **antes de qualquer coisa**:
+
+| Programa | Link | Observação |
+|----------|------|------------|
+| **Python 3.10+** | https://www.python.org/downloads/ | Marque **"Add Python to PATH"** durante a instalação |
+| **Git** | https://git-scm.com/download/win | Deixe todas as opções padrão |
 
 ---
 
-## Primeiros passos (instalação inicial)
+## Instalação inicial (feita apenas uma vez)
 
-Execute estes passos **apenas na primeira vez** que configurar o projeto na máquina.
+### 1. Clone o repositório
 
-### 1. Baixe o projeto do GitHub
-
-Acesse o repositório, clique em **Code → Download ZIP**, extraia e mova a pasta para:
-
-```
-C:\Users\Eduardo\Documents\inoutvehicle\
-```
-
-A estrutura ficará assim:
-
-```
-C:\Users\Eduardo\Documents\inoutvehicle\
-└── inoutvehicle-main\
-    ├── app\
-    ├── run.py
-    ├── seed.py
-    ├── requirements.txt
-    └── ...
-```
-
-### 2. Crie o ambiente virtual
-
-Abra o prompt de comando e navegue até a pasta do projeto:
+Abra o **Prompt de Comando** e execute:
 
 ```cmd
-cd C:\Users\Eduardo\Documents\inoutvehicle
+cd C:\Users\Eduardo\Documents
+git clone https://github.com/ejmacedo/inoutvehicle.git
 ```
 
-Crie o ambiente virtual (feito apenas uma vez):
+Isso criará a pasta `C:\Users\Eduardo\Documents\inoutvehicle\` já conectada ao GitHub.
 
-```cmd
-python -m venv .venv
-```
+### 2. Execute o instalador
 
-### 3. Ative o ambiente virtual
+Navegue até a pasta criada e dê **duplo clique** em `instalar.bat`.
 
-```cmd
-.\.venv\Scripts\activate
-```
+O script irá automaticamente:
+- Criar o ambiente virtual `.venv`
+- Instalar todas as dependências
+- Criar o banco de dados e o usuário administrador
 
-O prompt passará a exibir `(.venv)` no início, indicando que o ambiente está ativo.
+Usuário criado:
 
-### 4. Acesse a pasta principal do projeto
-
-```cmd
-cd inoutvehicle-main
-```
-
-### 5. Instale as dependências
-
-```cmd
-pip install -r requirements.txt
-```
-
-### 6. Inicialize o banco de dados
-
-```cmd
-python seed.py
-```
-
-Este comando cria o banco de dados e o usuário administrador padrão:
-
-| Campo    | Valor  |
-|----------|--------|
-| Usuário  | `root` |
-| Senha    | `1234` |
-
-### 7. Inicie o servidor
-
-```cmd
-python run.py
-```
-
-Acesse no navegador: [http://127.0.0.1:5000](http://127.0.0.1:5000)
+| Campo   | Valor  |
+|---------|--------|
+| Usuário | `root` |
+| Senha   | `1234` |
 
 ---
 
-## Uso diário (como iniciar o projeto)
+## Uso diário
 
-Sempre que quiser usar o sistema, abra o prompt de comando e execute:
+Dê **duplo clique** em `iniciar.bat`.
 
-```cmd
-cd C:\Users\Eduardo\Documents\inoutvehicle
-.\.venv\Scripts\activate
-cd inoutvehicle-main
-python run.py
-```
+O servidor será iniciado e estará disponível em: [http://127.0.0.1:5000](http://127.0.0.1:5000)
 
-Para encerrar o servidor, pressione `Ctrl + C` no prompt.
+Para encerrar, pressione `Ctrl + C` na janela do prompt.
 
 ---
 
-## Aplicando atualizações do GitHub
+## Aplicar atualizações
 
-Quando houver uma nova versão disponível no repositório, siga estes passos:
+Sempre que houver uma nova versão, dê **duplo clique** em `atualizar.bat`.
 
-### 1. Baixe a versão atualizada
+O script irá automaticamente:
+1. Baixar as atualizações do GitHub (`git pull`)
+2. Instalar novas dependências (se houver)
+3. Atualizar o banco de dados
+4. Iniciar o servidor
 
-No GitHub, clique em **Code → Download ZIP**, extraia e **substitua** a pasta `inoutvehicle-main` pela nova versão.
-
-### 2. Ative o ambiente virtual (se ainda não estiver ativo)
-
-```cmd
-cd C:\Users\Eduardo\Documents\inoutvehicle
-.\.venv\Scripts\activate
-cd inoutvehicle-main
-```
-
-### 3. Atualize as dependências
-
-```cmd
-pip install -r requirements.txt
-```
-
-> Execute este passo sempre que uma atualização adicionar novas bibliotecas.
-
-### 4. Atualize o banco de dados
-
-```cmd
-python seed.py
-```
-
-> ⚠ **Atenção:** se a atualização incluir mudanças no banco de dados (novas colunas ou tabelas), pode ser necessário rodar com a flag `--reset`, que **apaga todos os dados**:
+> ⚠ **Atenção:** algumas atualizações exigem reinicialização do banco de dados.  
+> Quando isso acontecer, estará indicado no histórico de versões abaixo.  
+> Para reinicializar o banco (**apaga todos os dados**), abra o prompt, ative o venv e rode:
 > ```cmd
+> cd C:\Users\Eduardo\Documents\inoutvehicle
+> .\.venv\Scripts\activate
+> cd inoutvehicle
 > python seed.py --reset
 > ```
-> O histórico de atualizações abaixo informa quando isso é necessário.
-
-### 5. Inicie o servidor
-
-```cmd
-python run.py
-```
 
 ---
 
 ## Configuração de e-mail (opcional)
 
-Para habilitar as notificações por e-mail e a recuperação de senha, crie um arquivo `.env` na pasta `inoutvehicle-main` com o seguinte conteúdo:
+Para habilitar notificações por e-mail e recuperação de senha, crie o arquivo `.env` dentro da pasta `inoutvehicle\` com o conteúdo:
 
 ```env
 SECRET_KEY=uma-chave-secreta-longa-e-aleatoria
@@ -166,26 +93,26 @@ MAIL_PASSWORD=sua-senha-de-app
 MAIL_DEFAULT_SENDER=InOut Veículos <seu-email@gmail.com>
 ```
 
-> **Gmail:** é necessário criar uma "Senha de App" em [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords) (requer verificação em duas etapas ativada).  
+> **Gmail:** crie uma "Senha de App" em [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords) (requer verificação em duas etapas).  
 > Sem o `.env`, o sistema funciona normalmente — apenas sem envio de e-mails.
 
 ---
 
 ## Perfis de acesso
 
-| Perfil        | O que pode fazer |
-|---------------|------------------|
-| **Admin**     | Gerenciar usuários, veículos e visualizar relatórios completos |
-| **Coordenador** | Aprovar ou recusar solicitações dos seus funcionários; gerar relatórios |
-| **Funcionário** | Solicitar uso de veículo e acompanhar suas solicitações |
-| **Portaria**  | Registrar saída (com odômetro) e retorno dos veículos |
+| Perfil          | O que pode fazer |
+|-----------------|------------------|
+| **Admin**       | Gerenciar usuários e veículos; relatórios completos |
+| **Coordenador** | Aprovar/recusar solicitações dos seus funcionários; relatórios |
+| **Funcionário** | Solicitar veículo e acompanhar suas solicitações |
+| **Portaria**    | Registrar saída (com odômetro) e retorno dos veículos |
 
 ---
 
 ## Histórico de versões
 
-| Versão | Resumo | Precisa de `--reset`? |
-|--------|--------|-----------------------|
+| Versão | Resumo | Reinicializar banco? |
+|--------|--------|----------------------|
 | **v0.1** | Versão inicial: login, solicitação, aprovação, portaria, admin | ✅ Sim (instalação nova) |
 | **v0.2** | Múltiplos coordenadores, saída/retorno real, e-mail, relatórios Excel/PDF | ✅ Sim |
 | **v0.3** | Toasts, recuperação de senha, validações pt-BR, odômetro na saída | ✅ Sim |
