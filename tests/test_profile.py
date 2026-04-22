@@ -29,39 +29,39 @@ class TestTrocarSenha:
     def test_trocar_senha_valida(self, client, app, employee):
         login(client, 'emp_user')
         r = client.post('/conta/trocar-senha', data={
-            'current_password': 'senha123',
-            'new_password': 'novaSenha456',
-            'new_password2': 'novaSenha456',
+            'current_password': 'Senha123',
+            'new_password': 'NovaSenha456',
+            'new_password2': 'NovaSenha456',
         }, follow_redirects=True)
         assert r.status_code == 200
         assert b'sucesso' in r.data.lower()
         with app.app_context():
             u = db.session.get(User, employee)
-            assert u.check_password('novaSenha456')
-            assert not u.check_password('senha123')
+            assert u.check_password('NovaSenha456')
+            assert not u.check_password('Senha123')
 
     def test_senha_atual_errada(self, client, employee):
         login(client, 'emp_user')
         r = client.post('/conta/trocar-senha', data={
             'current_password': 'senhaErrada',
-            'new_password': 'novaSenha456',
-            'new_password2': 'novaSenha456',
+            'new_password': 'NovaSenha456',
+            'new_password2': 'NovaSenha456',
         }, follow_redirects=True)
         assert b'incorreta' in r.data.lower()
 
     def test_senhas_novas_diferentes(self, client, employee):
         login(client, 'emp_user')
         r = client.post('/conta/trocar-senha', data={
-            'current_password': 'senha123',
-            'new_password': 'novaSenha456',
-            'new_password2': 'outraSenha789',
+            'current_password': 'Senha123',
+            'new_password': 'NovaSenha456',
+            'new_password2': 'OutraSenha789',
         }, follow_redirects=True)
         assert b'coincidem' in r.data.lower() or b'Trocar Senha' in r.data
 
     def test_nova_senha_muito_curta(self, client, employee):
         login(client, 'emp_user')
         r = client.post('/conta/trocar-senha', data={
-            'current_password': 'senha123',
+            'current_password': 'Senha123',
             'new_password': '123',
             'new_password2': '123',
         }, follow_redirects=True)

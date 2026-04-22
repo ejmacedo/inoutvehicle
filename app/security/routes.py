@@ -5,19 +5,17 @@ from app.security import bp
 from app.models import VehicleRequest, DriverReservation, RequestStatus, Role, Vehicle, User
 from app.extensions import db
 from app.decorators import role_required
+from app.audit import log_action
 
 
 def _build_portaria_list(args):
-    """Retorna (vr_list, dr_list) aplicando os filtros recebidos."""
     name_q = args.get('name', '').strip()
     vehicle_q = args.get('vehicle_id', '')
     date_q = args.get('date', '')
 
-    # --- VehicleRequests aprovados ---
     vr = VehicleRequest.query.filter(VehicleRequest.status == RequestStatus.APPROVED)
     if name_q:
-        vr = vr.join(VehicleRequest.employee).filter(
-            User.full_name.ilike(f'%{name_q}%'))
+        vr = vr.join(VehicleRequest.employee).filter(User.full_name.ilike(f'%{name_q}%'))
     if vehicle_q:
         vr = vr.filter(VehicleRequest.vehicle_id == int(vehicle_q))
     if date_q:
@@ -25,16 +23,14 @@ def _build_portaria_list(args):
             from datetime import date
             d = date.fromisoformat(date_q)
             start = datetime(d.year, d.month, d.day, 0, 0, 0)
-            end = datetime(d.year, d.month, d.day, 23, 59, 59)
+            end   = datetime(d.year, d.month, d.day, 23, 59, 59)
             vr = vr.filter(VehicleRequest.departure_datetime.between(start, end))
         except ValueError:
             pass
 
-    # --- DriverReservations ---
     dr = DriverReservation.query
     if name_q:
-        dr = dr.join(DriverReservation.driver).filter(
-            User.full_name.ilike(f'%{name_q}%'))
+        dr = dr.join(DriverReservation.driver).filter(User.full_name.ilike(f'%{name_q}%'))
     if vehicle_q:
         dr = dr.filter(DriverReservation.vehicle_id == int(vehicle_q))
     if date_q:
@@ -42,7 +38,7 @@ def _build_portaria_list(args):
             from datetime import date
             d = date.fromisoformat(date_q)
             start = datetime(d.year, d.month, d.day, 0, 0, 0)
-            end = datetime(d.year, d.month, d.day, 23, 59, 59)
+            end   = datetime(d.year, d.month, d.day, 23, 59, 59)
             dr = dr.filter(DriverReservation.departure_datetime.between(start, end))
         except ValueError:
             pass
@@ -52,7 +48,6 @@ def _build_portaria_list(args):
 
 
 def _register_obs(obj, scheduled_dt):
-    """Gera OBS portaria se saída real diferir >= 30 min da prevista."""
     actual = datetime.now()
     diff_sec = (actual - scheduled_dt).total_seconds()
     diff_min = int(abs(diff_sec) / 60)
@@ -70,17 +65,11 @@ def _register_obs(obj, scheduled_dt):
 def dashboard():
     vr_list, dr_list = _build_portaria_list(request.args)
     vehicles = Vehicle.query.filter_by(is_active=True).order_by(Vehicle.name).all()
-    return render_template(
-        'security/dashboard.html',
-        title='Portaria — Controle de Saídas',
-        vr_list=vr_list,
-        dr_list=dr_list,
-        vehicles=vehicles,
-        args=request.args,
-    )
+    return render_template('security/dashboard.html',
+                           title='Portaria — Controle de Saídas',
+                           vr_list=vr_list, dr_list=dr_list,
+                           vehicles=vehicles, args=request.args)
 
-
-# ── VehicleRequest: saída ─────────────────────────────────────────────────────
 
 @bp.route('/solicitacao/<int:request_id>/saiu', methods=['POST'])
 @login_required
@@ -97,11 +86,13 @@ def mark_departed(request_id):
     vr.actual_departure_datetime = datetime.now()
     _register_obs(vr, vr.departure_datetime)
     db.session.commit()
-    flash(f'Saída de {vr.employee.full_name} registrada — {vr.actual_departure_datetime.strftime("%d/%m/%Y %H:%M")}.', 'success')
+    log_action('SAIDA_REGISTRADA',
+               f"Saída de '{vr.employee.full_name}' registrada. "
+               f"Veículo: '{vr.vehicle.name}'. KM: {km}.")
+    flash(f'Saída de {vr.employee.full_name} registrada — '
+          f'{vr.actual_departure_datetime.strftime("%d/%m/%Y %H:%M")}.', 'success')
     return redirect(url_for('security.dashboard', **request.args))
 
-
-# ── VehicleRequest: retorno ───────────────────────────────────────────────────
 
 @bp.route('/solicitacao/<int:request_id>/voltou', methods=['POST'])
 @login_required
@@ -118,11 +109,13 @@ def mark_returned(request_id):
     vr.odometer_return = int(km)
     vr.actual_return_datetime = datetime.now()
     db.session.commit()
-    flash(f'Retorno de {vr.employee.full_name} registrado — {vr.actual_return_datetime.strftime("%d/%m/%Y %H:%M")}.', 'success')
+    log_action('RETORNO_REGISTRADO',
+               f"Retorno de '{vr.employee.full_name}' registrado. "
+               f"Veículo: '{vr.vehicle.name}'. KM: {km}.")
+    flash(f'Retorno de {vr.employee.full_name} registrado — '
+          f'{vr.actual_return_datetime.strftime("%d/%m/%Y %H:%M")}.', 'success')
     return redirect(url_for('security.dashboard', **request.args))
 
-
-# ── DriverReservation: saída ──────────────────────────────────────────────────
 
 @bp.route('/reserva/<int:reservation_id>/saiu', methods=['POST'])
 @login_required
@@ -137,11 +130,13 @@ def driver_departed(reservation_id):
     dr.actual_departure_datetime = datetime.now()
     _register_obs(dr, dr.departure_datetime)
     db.session.commit()
-    flash(f'Saída de {dr.driver.full_name} registrada — {dr.actual_departure_datetime.strftime("%d/%m/%Y %H:%M")}.', 'success')
+    log_action('SAIDA_MOTORISTA',
+               f"Saída de motorista '{dr.driver.full_name}' registrada. "
+               f"Veículo: '{dr.vehicle.name}'. KM: {km}.")
+    flash(f'Saída de {dr.driver.full_name} registrada — '
+          f'{dr.actual_departure_datetime.strftime("%d/%m/%Y %H:%M")}.', 'success')
     return redirect(url_for('security.dashboard', **request.args))
 
-
-# ── DriverReservation: retorno ────────────────────────────────────────────────
 
 @bp.route('/reserva/<int:reservation_id>/voltou', methods=['POST'])
 @login_required
@@ -158,5 +153,9 @@ def driver_returned(reservation_id):
     dr.odometer_return = int(km)
     dr.actual_return_datetime = datetime.now()
     db.session.commit()
-    flash(f'Retorno de {dr.driver.full_name} registrado — {dr.actual_return_datetime.strftime("%d/%m/%Y %H:%M")}.', 'success')
+    log_action('RETORNO_MOTORISTA',
+               f"Retorno de motorista '{dr.driver.full_name}' registrado. "
+               f"Veículo: '{dr.vehicle.name}'. KM: {km}.")
+    flash(f'Retorno de {dr.driver.full_name} registrado — '
+          f'{dr.actual_return_datetime.strftime("%d/%m/%Y %H:%M")}.', 'success')
     return redirect(url_for('security.dashboard', **request.args))

@@ -170,8 +170,8 @@ class TestMotoristas:
             'full_name': 'Novo Motorista',
             'username': 'novo_driver',
             'email': 'novo_driver@test.com',
-            'password': 'senha123',
-            'password2': 'senha123',
+            'password': 'Senha123',
+            'password2': 'Senha123',
             'is_active': 'y',
         }, follow_redirects=True)
         assert r.status_code == 200
@@ -187,8 +187,8 @@ class TestMotoristas:
             'full_name': 'Duplicado',
             'username': 'driver_user',   # já existe
             'email': 'outro@test.com',
-            'password': 'senha123',
-            'password2': 'senha123',
+            'password': 'Senha123',
+            'password2': 'Senha123',
             'is_active': 'y',
         }, follow_redirects=True)
         assert b'j' in r.data.lower() and b'uso' in r.data.lower()

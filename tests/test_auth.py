@@ -40,7 +40,7 @@ class TestLogin:
         assert b'inv' in r.data.lower()
 
     def test_login_usuario_inativo(self, client, inactive_user):
-        r = client.post('/login', data={'username': 'inactive_user', 'password': 'senha123'},
+        r = client.post('/login', data={'username': 'inactive_user', 'password': 'Senha123'},
                         follow_redirects=True)
         assert b'inativa' in r.data.lower()
 

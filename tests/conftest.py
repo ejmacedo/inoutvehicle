@@ -43,7 +43,7 @@ def client(app):
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
-def login(client, username, password='senha123'):
+def login(client, username, password='Senha123'):
     return client.post('/login', data={'username': username, 'password': password},
                        follow_redirects=True)
 
@@ -60,7 +60,7 @@ def make_dt(offset_hours=2):
 
 # ── Factories de usuários ─────────────────────────────────────────────────────
 
-def _user(username, role, password='senha123', active=True):
+def _user(username, role, password='Senha123', active=True):
     full_name = username.replace('_', ' ').replace('.', ' ').title()
     u = User(username=username, email=f'{username}@test.com',
              full_name=full_name, role=role, is_active=active)

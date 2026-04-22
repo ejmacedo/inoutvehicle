@@ -31,7 +31,7 @@ def _migrate_columns(conn):
             print(f'  Coluna adicionada: {table}.{column}')
 
 
-def _get_or_create_user(username, email, full_name, role, password='1234', is_active=True):
+def _get_or_create_user(username, email, full_name, role, password='Senha1234', is_active=True):
     user = User.query.filter_by(username=username).first()
     if not user:
         user = User(username=username, email=email, full_name=full_name,
@@ -107,7 +107,7 @@ with app.app_context():
     db.session.commit()
 
     print('\n── Resumo de logins ──────────────────────────────')
-    print('  Todos os usuários abaixo usam senha: 1234')
+    print('  Todos os usuários abaixo usam senha: Senha1234')
     print()
     print('  Perfil       | Usuário')
     print('  -------------|---------------------')

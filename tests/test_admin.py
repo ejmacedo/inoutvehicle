@@ -37,8 +37,8 @@ class TestAdminUsuarios:
             'full_name': 'Novo Funcionário',
             'role': 'employee',
             'coordinator_ids': [coordinator],
-            'password': 'senha123',
-            'password2': 'senha123',
+            'password': 'Senha123',
+            'password2': 'Senha123',
             'is_active': 'y',
         }, follow_redirects=True)
         assert r.status_code == 200
@@ -55,8 +55,8 @@ class TestAdminUsuarios:
             'email': 'outro@test.com',
             'full_name': 'Outro',
             'role': 'employee',
-            'password': 'senha123',
-            'password2': 'senha123',
+            'password': 'Senha123',
+            'password2': 'Senha123',
             'is_active': 'y',
         }, follow_redirects=True)
         assert b'j' in r.data.lower() and b'uso' in r.data.lower()
@@ -68,8 +68,8 @@ class TestAdminUsuarios:
             'email': 'emp_user@test.com',   # já existe
             'full_name': 'Outro',
             'role': 'employee',
-            'password': 'senha123',
-            'password2': 'senha123',
+            'password': 'Senha123',
+            'password2': 'Senha123',
             'is_active': 'y',
         }, follow_redirects=True)
         assert b'j' in r.data.lower() and b'cadastrado' in r.data.lower()
@@ -81,7 +81,7 @@ class TestAdminUsuarios:
             'email': 'novo@test.com',
             'full_name': 'Novo',
             'role': 'employee',
-            'password': 'senha123',
+            'password': 'Senha123',
             'password2': 'senhaDiferente',
             'is_active': 'y',
         }, follow_redirects=True)
@@ -111,13 +111,13 @@ class TestAdminUsuarios:
             'email': 'emp_user@test.com',
             'full_name': 'Emp User',
             'role': 'employee',
-            'password': 'novaSenha456',
-            'password2': 'novaSenha456',
+            'password': 'NovaSenha456',
+            'password2': 'NovaSenha456',
             'is_active': 'y',
         }, follow_redirects=True)
         with app.app_context():
             u = db.session.get(User, employee)
-            assert u.check_password('novaSenha456')
+            assert u.check_password('NovaSenha456')
 
     def test_desativar_usuario(self, client, app, admin, employee):
         login(client, 'admin_user')
@@ -142,8 +142,8 @@ class TestAdminUsuarios:
                 'email': f'user_{role}@test.com',
                 'full_name': f'Usuário {role}',
                 'role': role,
-                'password': 'senha123',
-                'password2': 'senha123',
+                'password': 'Senha123',
+                'password2': 'Senha123',
                 'is_active': 'y',
             }, follow_redirects=True)
             assert b'criado' in r.data.lower(), f'Falhou para perfil: {role}'

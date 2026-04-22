@@ -7,6 +7,7 @@ from app.extensions import db
 from app.decorators import role_required
 from app.email_utils import notify_coordinators_new_request
 from app.utils import get_unavailable_vehicle_ids
+from app.audit import log_action
 
 
 @bp.route('/dashboard')
@@ -57,6 +58,10 @@ def new_request():
         )
         db.session.add(vehicle_request)
         db.session.commit()
+        v = Vehicle.query.get(vehicle_request.vehicle_id)
+        log_action('SOLICITACAO_CRIADA',
+                   f"Solicitação #{vehicle_request.id} criada por '{current_user.username}' "
+                   f"para veículo '{v.name}' em {departure.strftime('%d/%m/%Y %H:%M')}.")
         notify_coordinators_new_request(vehicle_request)
         flash('Solicitação enviada! Aguardando aprovação do coordenador.', 'success')
         return redirect(url_for('employee.dashboard'))

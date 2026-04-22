@@ -1,4 +1,6 @@
-from flask import Flask
+from datetime import datetime, timedelta
+from flask import Flask, session, redirect, url_for, flash, render_template
+from flask_login import logout_user, current_user
 from config import Config
 from app.extensions import db, login_manager, migrate, csrf
 
@@ -15,6 +17,31 @@ def create_app(config_class=Config):
     login_manager.login_view = 'auth.login'
     login_manager.login_message = 'Por favor, faça login para acessar esta página.'
     login_manager.login_message_category = 'info'
+
+    # ── Timeout de sessão por inatividade ─────────────────────────────────────
+    @app.before_request
+    def check_session_timeout():
+        if current_user.is_authenticated:
+            last = session.get('_last_active')
+            timeout = app.config.get('PERMANENT_SESSION_LIFETIME', timedelta(minutes=30))
+            if last:
+                elapsed = datetime.now() - datetime.fromisoformat(last)
+                if elapsed > timeout:
+                    logout_user()
+                    session.clear()
+                    flash('Sua sessão expirou por inatividade. Faça login novamente.', 'warning')
+                    return redirect(url_for('auth.login'))
+            session['_last_active'] = datetime.now().isoformat()
+
+    # ── Headers de segurança HTTP ─────────────────────────────────────────────
+    @app.after_request
+    def add_security_headers(response):
+        response.headers['X-Content-Type-Options'] = 'nosniff'
+        response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+        response.headers['X-XSS-Protection'] = '1; mode=block'
+        response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+        response.headers['Permissions-Policy'] = 'geolocation=(), microphone=(), camera=()'
+        return response
 
     from app.auth import bp as auth_bp
     app.register_blueprint(auth_bp)
@@ -39,8 +66,6 @@ def create_app(config_class=Config):
 
     from app.profile import bp as profile_bp
     app.register_blueprint(profile_bp)
-
-    from flask import render_template
 
     @app.errorhandler(403)
     def forbidden(e):
