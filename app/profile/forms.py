@@ -1,6 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import PasswordField, SubmitField
-from wtforms.validators import DataRequired, Length, EqualTo
+from wtforms.validators import DataRequired, EqualTo
+from app.validators import strong_password
 
 
 class ChangePasswordForm(FlaskForm):
@@ -9,7 +10,7 @@ class ChangePasswordForm(FlaskForm):
     ])
     new_password = PasswordField('Nova Senha', validators=[
         DataRequired(message='Informe a nova senha.'),
-        Length(min=6, message='A senha deve ter no mínimo 6 caracteres.'),
+        strong_password,
     ])
     new_password2 = PasswordField('Confirmar Nova Senha', validators=[
         DataRequired(message='Confirme a nova senha.'),

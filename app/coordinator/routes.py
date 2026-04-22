@@ -9,6 +9,7 @@ from app.extensions import db
 from app.decorators import role_required
 from app.email_utils import notify_employee_approved, notify_employee_rejected
 from app.utils import get_unavailable_vehicle_ids
+from app.audit import log_action
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -95,6 +96,8 @@ def approve(request_id):
     vehicle_request.updated_at = datetime.now(timezone.utc)
     db.session.commit()
     notify_employee_approved(vehicle_request)
+    log_action('SOLICITACAO_APROVADA',
+               f'Solicitação #{vehicle_request.id} aprovada para {vehicle_request.employee.full_name}')
     flash('Solicitação aprovada com sucesso.', 'success')
     return redirect(url_for('coordinator.dashboard'))
 
@@ -116,6 +119,8 @@ def reject(request_id):
     vehicle_request.updated_at = datetime.now(timezone.utc)
     db.session.commit()
     notify_employee_rejected(vehicle_request)
+    log_action('SOLICITACAO_RECUSADA',
+               f'Solicitação #{vehicle_request.id} recusada. Motivo: {notes[:100]}')
     flash('Solicitação recusada.', 'warning')
     return redirect(url_for('coordinator.dashboard'))
 
@@ -159,6 +164,8 @@ def edit_employee(user_id):
             if form.password.data:
                 user.set_password(form.password.data)
             db.session.commit()
+            log_action('FUNCIONARIO_ATUALIZADO',
+                       f'Funcionário "{user.full_name}" (ID {user.id}) atualizado pelo coordenador')
             flash(f'Dados de "{user.full_name}" atualizados.', 'success')
             return redirect(url_for('coordinator.employees'))
 
@@ -201,6 +208,8 @@ def create_driver():
             driver.coordinators.append(current_user)
             db.session.add(driver)
             db.session.commit()
+            log_action('MOTORISTA_CRIADO',
+                       f'Motorista "{driver.full_name}" (login: {driver.username}) cadastrado')
             flash(f'Motorista "{driver.full_name}" cadastrado.', 'success')
             return redirect(url_for('coordinator.drivers'))
 
@@ -232,6 +241,8 @@ def edit_driver(user_id):
             if form.password.data:
                 driver.set_password(form.password.data)
             db.session.commit()
+            log_action('MOTORISTA_ATUALIZADO',
+                       f'Motorista "{driver.full_name}" (ID {driver.id}) atualizado pelo coordenador')
             flash(f'Dados de "{driver.full_name}" atualizados.', 'success')
             return redirect(url_for('coordinator.drivers'))
 
@@ -288,6 +299,9 @@ def new_driver_reservation():
             )
             db.session.add(reservation)
             db.session.commit()
+            driver = db.session.get(User, form.driver_id.data)
+            log_action('RESERVA_MOTORISTA_CRIADA',
+                       f'Reserva #{reservation.id} criada para motorista "{driver.full_name}"')
             flash('Reserva criada e aprovada automaticamente.', 'success')
             return redirect(url_for('coordinator.driver_reservations'))
 

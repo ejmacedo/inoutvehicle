@@ -1,6 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import DataRequired, Length, Email, EqualTo
+from app.validators import strong_password
 
 
 class LoginForm(FlaskForm):
@@ -26,7 +27,7 @@ class PasswordResetRequestForm(FlaskForm):
 class PasswordResetForm(FlaskForm):
     password = PasswordField('Nova Senha', validators=[
         DataRequired(message='A nova senha é obrigatória.'),
-        Length(min=6, message='A senha deve ter no mínimo 6 caracteres.'),
+        strong_password,
     ])
     password2 = PasswordField('Confirmar Nova Senha', validators=[
         DataRequired(message='Confirme a nova senha.'),

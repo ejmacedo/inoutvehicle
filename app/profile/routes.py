@@ -4,6 +4,7 @@ from app.profile import bp
 from app.profile.forms import ChangePasswordForm
 from app.models import Role
 from app.extensions import db
+from app.audit import log_action
 
 
 @bp.route('/trocar-senha', methods=['GET', 'POST'])
@@ -21,6 +22,8 @@ def change_password():
                                    title='Trocar Senha', form=form)
         current_user.set_password(form.new_password.data)
         db.session.commit()
+        log_action('SENHA_ALTERADA',
+                   f"Usuário '{current_user.username}' alterou sua própria senha.")
         flash('Senha alterada com sucesso!', 'success')
         return redirect(url_for('main.index'))
 

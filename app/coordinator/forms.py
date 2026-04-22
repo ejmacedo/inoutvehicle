@@ -3,6 +3,7 @@ from wtforms import (StringField, PasswordField, SelectField, TextAreaField,
                      BooleanField, SubmitField)
 from wtforms.fields import DateTimeLocalField
 from wtforms.validators import DataRequired, Email, Length, Optional, EqualTo
+from app.validators import strong_password
 
 
 class ApproveForm(FlaskForm):
@@ -58,7 +59,7 @@ class CoordinatorEditUserForm(FlaskForm):
     ])
     password = PasswordField('Nova Senha (deixe em branco para não alterar)', validators=[
         Optional(),
-        Length(min=6, message='A senha deve ter no mínimo 6 caracteres.'),
+        strong_password,
     ])
     password2 = PasswordField('Confirmar Nova Senha', validators=[
         EqualTo('password', message='As senhas não coincidem.'),
@@ -86,7 +87,7 @@ class CoordinatorCreateDriverForm(FlaskForm):
     ])
     password = PasswordField('Senha', validators=[
         DataRequired(message='A senha é obrigatória.'),
-        Length(min=6, message='A senha deve ter no mínimo 6 caracteres.'),
+        strong_password,
     ])
     password2 = PasswordField('Confirmar Senha', validators=[
         DataRequired(message='Confirme a senha.'),

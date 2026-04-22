@@ -151,6 +151,24 @@ class DriverReservation(db.Model):
         return f'<DriverReservation {self.id}>'
 
 
+class AuditLog(db.Model):
+    """Registro imutável de todas as ações relevantes do sistema."""
+    __tablename__ = 'audit_logs'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    username = db.Column(db.String(64), nullable=True)
+    action = db.Column(db.String(50), nullable=False, index=True)
+    description = db.Column(db.Text, nullable=True)
+    ip_address = db.Column(db.String(45), nullable=True)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+
+    user = db.relationship('User', foreign_keys=[user_id], backref='audit_logs')
+
+    def __repr__(self):
+        return f'<AuditLog {self.action} by {self.username}>'
+
+
 @login_manager.user_loader
 def load_user(user_id):
     return db.session.get(User, int(user_id))

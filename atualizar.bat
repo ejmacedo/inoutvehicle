@@ -12,7 +12,7 @@ cd /d "%~dp0"
 call .\.venv\Scripts\activate
 cd inoutvehicle
 
-echo  [1/4] Baixando atualizacoes do GitHub...
+echo  [1/5] Baixando atualizacoes do GitHub...
 git pull origin main
 if errorlevel 1 (
     echo.
@@ -23,15 +23,19 @@ if errorlevel 1 (
 )
 
 echo.
-echo  [2/4] Atualizando dependencias...
+echo  [2/5] Atualizando dependencias...
 pip install -r requirements.txt --quiet
 
 echo.
-echo  [3/4] Atualizando banco de dados...
+echo  [3/5] Fazendo backup do banco de dados...
+python backup.py
+
+echo.
+echo  [4/5] Atualizando banco de dados...
 python seed.py
 
 echo.
-echo  [4/4] Iniciando servidor...
+echo  [5/5] Iniciando servidor...
 echo.
 echo  Servidor rodando em: http://127.0.0.1:5000
 echo  Para encerrar pressione Ctrl+C

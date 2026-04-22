@@ -1,10 +1,11 @@
-from flask import render_template, redirect, url_for, flash
+from flask import render_template, redirect, url_for, flash, request
 from flask_login import login_required
 from app.admin import bp
 from app.admin.forms import UserForm, EditUserForm, VehicleForm
-from app.models import User, Vehicle, VehicleRequest, Role
+from app.models import User, Vehicle, VehicleRequest, AuditLog, Role
 from app.extensions import db
 from app.decorators import role_required
+from app.audit import log_action
 
 
 def _coordinator_choices():
@@ -43,7 +44,6 @@ def create_user():
     form.coordinator_ids.choices = _coordinator_choices()
 
     if form.validate_on_submit():
-        # Verificações de duplicidade → aparecem como toasts
         if User.query.filter_by(username=form.username.data).first():
             flash(f'O nome de usuário "{form.username.data}" já está em uso. Escolha outro.', 'danger')
             return render_template('admin/user_form.html', title='Novo Usuário', form=form)
@@ -65,6 +65,8 @@ def create_user():
             user.coordinators = coords
         db.session.add(user)
         db.session.commit()
+        log_action('USUARIO_CRIADO',
+                   f'Usuário "{user.username}" (perfil: {user.role}) criado pelo admin')
         flash(f'Usuário "{user.username}" criado com sucesso.', 'success')
         return redirect(url_for('admin.users'))
 
@@ -80,7 +82,6 @@ def edit_user(user_id):
     form.coordinator_ids.choices = _coordinator_choices()
 
     if form.validate_on_submit():
-        # Verificações de duplicidade → aparecem como toasts
         if (form.username.data != user.username and
                 User.query.filter_by(username=form.username.data).first()):
             flash(f'O nome de usuário "{form.username.data}" já está em uso. Escolha outro.', 'danger')
@@ -106,6 +107,8 @@ def edit_user(user_id):
         else:
             user.coordinators = []
         db.session.commit()
+        log_action('USUARIO_ATUALIZADO',
+                   f'Usuário "{user.username}" (ID {user.id}) atualizado pelo admin')
         flash(f'Usuário "{user.username}" atualizado com sucesso.', 'success')
         return redirect(url_for('admin.users'))
 
@@ -140,6 +143,8 @@ def create_vehicle():
         )
         db.session.add(vehicle)
         db.session.commit()
+        log_action('VEICULO_CRIADO',
+                   f'Veículo "{vehicle.name}" (placa: {vehicle.plate}) cadastrado')
         flash(f'Veículo "{vehicle.name}" cadastrado com sucesso.', 'success')
         return redirect(url_for('admin.vehicles'))
     return render_template('admin/vehicle_form.html', title='Novo Veículo', form=form)
@@ -163,6 +168,38 @@ def edit_vehicle(vehicle_id):
         vehicle.model = form.model.data
         vehicle.is_active = form.is_active.data
         db.session.commit()
+        log_action('VEICULO_ATUALIZADO',
+                   f'Veículo "{vehicle.name}" (placa: {vehicle.plate}) atualizado')
         flash(f'Veículo "{vehicle.name}" atualizado com sucesso.', 'success')
         return redirect(url_for('admin.vehicles'))
     return render_template('admin/vehicle_form.html', title='Editar Veículo', form=form, vehicle=vehicle)
+
+
+# ── Log de Auditoria ──────────────────────────────────────────────────────────
+
+@bp.route('/auditoria')
+@login_required
+@role_required(Role.ADMIN)
+def audit_log():
+    page = request.args.get('page', 1, type=int)
+    action_filter = request.args.get('action', '').strip()
+    user_filter = request.args.get('user', '').strip()
+
+    query = AuditLog.query.order_by(AuditLog.created_at.desc())
+
+    if action_filter:
+        query = query.filter(AuditLog.action.ilike(f'%{action_filter}%'))
+    if user_filter:
+        query = query.filter(AuditLog.username.ilike(f'%{user_filter}%'))
+
+    logs = query.paginate(page=page, per_page=50, error_out=False)
+
+    # Ações distintas para o filtro dropdown
+    actions = [r[0] for r in db.session.query(AuditLog.action).distinct().order_by(AuditLog.action).all()]
+
+    return render_template('admin/audit_log.html',
+                           title='Log de Auditoria',
+                           logs=logs,
+                           actions=actions,
+                           action_filter=action_filter,
+                           user_filter=user_filter)
