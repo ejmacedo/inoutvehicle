@@ -8,7 +8,7 @@ echo   InOut Veículos — Iniciando servidor...
 echo  ============================================
 echo.
 
-cd /d "%~dp0"
+cd /d "%~dp0.."
 call .\.venv\Scripts\activate
 cd inoutvehicle
 
