@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from flask import Flask, session, redirect, url_for, flash, render_template
+from flask import Flask, session, redirect, url_for, flash, render_template, request
 from flask_login import logout_user, current_user
 from config import Config
 from app.extensions import db, login_manager, migrate, csrf
@@ -66,6 +66,23 @@ def create_app(config_class=Config):
 
     from app.profile import bp as profile_bp
     app.register_blueprint(profile_bp)
+
+    from app.privacy import bp as privacy_bp
+    app.register_blueprint(privacy_bp)
+
+    # ── Verificação de consentimento LGPD ────────────────────────────────────────
+    _consent_exempt = {
+        'privacy.policy', 'privacy.consent',
+        'auth.login', 'auth.logout', 'auth.reset_password',
+        'auth.reset_password_token', 'static',
+    }
+
+    @app.before_request
+    def check_consent():
+        if (current_user.is_authenticated
+                and request.endpoint not in _consent_exempt
+                and current_user.consent_accepted_at is None):
+            return redirect(url_for('privacy.consent'))
 
     @app.errorhandler(403)
     def forbidden(e):

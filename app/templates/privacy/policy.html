@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+<div class="col-lg-8">
+
+<h4 class="mb-1"><i class="bi bi-shield-check me-2 text-primary"></i>Política de Privacidade</h4>
+<p class="text-muted small mb-4">Última atualização: abril de 2025 — versão 1.0</p>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <h6 class="card-title text-primary">1. Quem somos</h6>
+    <p class="card-text small">
+      O <strong>InOut Veículos</strong> é um sistema interno de controle de entrada e saída de veículos
+      corporativos. O <strong>controlador dos dados</strong> é a própria organização empregadora que
+      instalou e opera este sistema.
+    </p>
+  </div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <h6 class="card-title text-primary">2. Quais dados coletamos e por quê</h6>
+    <div class="table-responsive">
+      <table class="table table-sm small mb-0">
+        <thead class="table-light">
+          <tr><th>Dado</th><th>Finalidade</th><th>Base legal (LGPD)</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Nome completo, nome de usuário, e-mail</td>
+            <td>Identificação e autenticação no sistema</td>
+            <td>Legítimo interesse / Contrato de trabalho — Art. 7º, II e IX</td>
+          </tr>
+          <tr>
+            <td>Senha (armazenada em hash criptográfico)</td>
+            <td>Segurança de acesso</td>
+            <td>Legítimo interesse — Art. 7º, IX</td>
+          </tr>
+          <tr>
+            <td>Dados de solicitações de veículo (datas, horários, odômetro, motivo da viagem)</td>
+            <td>Controle operacional de frota corporativa</td>
+            <td>Execução de contrato / Legítimo interesse — Art. 7º, II e IX</td>
+          </tr>
+          <tr>
+            <td>Endereço IP de acesso</td>
+            <td>Segurança, prevenção a fraudes e auditoria</td>
+            <td>Legítimo interesse — Art. 7º, IX</td>
+          </tr>
+          <tr>
+            <td>Registro de ações no sistema (log de auditoria)</td>
+            <td>Rastreabilidade, conformidade e segurança</td>
+            <td>Legítimo interesse / Obrigação legal — Art. 7º, II e IX</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <h6 class="card-title text-primary">3. Minimização de dados</h6>
+    <p class="card-text small">
+      Coletamos <strong>apenas os dados estritamente necessários</strong> para o funcionamento do
+      controle de frota. O sistema não coleta localização geográfica em tempo real, não acessa
+      câmera, microfone ou contatos do dispositivo.
+    </p>
+  </div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <h6 class="card-title text-primary">4. Compartilhamento de dados</h6>
+    <p class="card-text small">
+      <strong>Seus dados não são compartilhados com terceiros.</strong> O acesso é restrito a:
+    </p>
+    <ul class="small mb-0">
+      <li>Você mesmo (seus próprios dados)</li>
+      <li>Coordenadores responsáveis pela sua equipe (dados de solicitações)</li>
+      <li>Funcionários de portaria (dados de saída e retorno de veículos)</li>
+      <li>Administradores do sistema (dados completos para gestão operacional)</li>
+    </ul>
+  </div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <h6 class="card-title text-primary">5. Tempo de retenção</h6>
+    <div class="table-responsive">
+      <table class="table table-sm small mb-0">
+        <thead class="table-light">
+          <tr><th>Tipo de dado</th><th>Prazo de retenção</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Dados da conta (nome, e-mail, usuário)</td><td>Enquanto o vínculo empregatício estiver ativo; excluídos após solicitação formal</td></tr>
+          <tr><td>Registros de solicitações de veículos</td><td>5 anos (prazo trabalhista e fiscal)</td></tr>
+          <tr><td>Logs de auditoria e IPs</td><td>2 anos</td></tr>
+          <tr><td>Backups do banco de dados</td><td>30 cópias rotativas (aprox. 30 dias)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <h6 class="card-title text-primary">6. Segurança dos dados (Privacy by Design)</h6>
+    <ul class="small mb-0">
+      <li>Senhas armazenadas com hash criptográfico (Werkzeug/bcrypt) — nunca em texto puro</li>
+      <li>Proteção contra ataques de força bruta (bloqueio após 5 tentativas, 15 min)</li>
+      <li>Expiração automática de sessão por inatividade (30 minutos)</li>
+      <li>Cabeçalhos HTTP de segurança (X-Frame-Options, X-Content-Type-Options, etc.)</li>
+      <li>Proteção CSRF em todos os formulários</li>
+      <li>Backup automático com rotação do banco de dados</li>
+      <li>Log de auditoria de todas as ações sensíveis</li>
+      <li>Acesso baseado em perfis (cada usuário vê apenas o que é necessário para sua função)</li>
+    </ul>
+  </div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <h6 class="card-title text-primary">7. Seus direitos como titular (LGPD — Art. 18)</h6>
+    <p class="small">Você tem os seguintes direitos, exercíveis diretamente pelo sistema ou por solicitação ao administrador:</p>
+    <ul class="small mb-0">
+      <li><strong>Acesso:</strong> visualize todos os dados que temos sobre você em <a href="{{ url_for('profile.my_data') }}">Meus Dados</a></li>
+      <li><strong>Correção:</strong> dados incorretos podem ser corrigidos pelo administrador ou pelo próprio coordenador</li>
+      <li><strong>Portabilidade:</strong> exporte seus dados em formato JSON em <a href="{{ url_for('profile.my_data') }}">Meus Dados</a></li>
+      <li><strong>Exclusão:</strong> solicite a exclusão da sua conta em <a href="{{ url_for('profile.my_data') }}">Meus Dados</a> (sujeito aos prazos legais de retenção)</li>
+      <li><strong>Informação:</strong> este documento detalha todas as finalidades de uso</li>
+      <li><strong>Revogação do consentimento:</strong> entre em contato com o administrador do sistema</li>
+    </ul>
+  </div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <h6 class="card-title text-primary">8. Cookies e rastreamento</h6>
+    <p class="card-text small">
+      O sistema utiliza apenas <strong>cookies de sessão</strong> (tecnicamente necessários para
+      manter você autenticado). Não utilizamos cookies de publicidade, rastreamento ou analytics
+      de terceiros. O cookie de sessão expira automaticamente após 30 minutos de inatividade ou
+      ao fechar o navegador.
+    </p>
+  </div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <h6 class="card-title text-primary">9. Encarregado de Dados (DPO)</h6>
+    <p class="card-text small">
+      Para exercer seus direitos, esclarecer dúvidas ou registrar reclamações relacionadas ao
+      tratamento dos seus dados pessoais, entre em contato com o administrador da sua organização
+      ou com o encarregado de dados (DPO) designado pela empresa.
+    </p>
+    <p class="card-text small mb-0">
+      Autoridade Nacional de Proteção de Dados (ANPD):
+      <a href="https://www.gov.br/anpd" target="_blank" rel="noopener noreferrer">www.gov.br/anpd</a>
+    </p>
+  </div>
+</div>
+
+<div class="card mb-4 border-primary">
+  <div class="card-body">
+    <h6 class="card-title text-primary">10. Alterações nesta política</h6>
+    <p class="card-text small mb-0">
+      Qualquer alteração relevante nesta política será comunicada através do sistema. A versão
+      vigente sempre estará disponível nesta página. O uso continuado do sistema após a publicação
+      de mudanças representa a aceitação das mesmas.
+    </p>
+  </div>
+</div>
+
+{% if current_user.is_authenticated %}
+<div class="text-center mb-4">
+  <a href="{{ url_for('profile.my_data') }}" class="btn btn-primary me-2">
+    <i class="bi bi-person-lines-fill me-1"></i>Meus Dados
+  </a>
+  <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">
+    <i class="bi bi-arrow-left me-1"></i>Voltar
+  </a>
+</div>
+{% endif %}
+
+</div>
+</div>
+{% endblock %}

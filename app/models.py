@@ -30,6 +30,8 @@ class User(UserMixin, db.Model):
     role = db.Column(db.String(20), nullable=False, default=Role.EMPLOYEE)
     is_active = db.Column(db.Boolean, default=True, nullable=False)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    consent_accepted_at = db.Column(db.DateTime, nullable=True)
+    deletion_requested_at = db.Column(db.DateTime, nullable=True)
 
     coordinators = db.relationship(
         'User',

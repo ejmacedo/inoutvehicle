@@ -1,9 +1,9 @@
 """Fixtures compartilhadas por toda a suíte de testes."""
 import pytest
-from datetime import datetime, timedelta
 from sqlalchemy.pool import StaticPool
 from app import create_app
 from app.extensions import db as _db
+from datetime import datetime, timedelta, timezone
 from app.models import User, Vehicle, VehicleRequest, DriverReservation, RequestStatus, Role
 
 
@@ -63,7 +63,8 @@ def make_dt(offset_hours=2):
 def _user(username, role, password='Senha123', active=True):
     full_name = username.replace('_', ' ').replace('.', ' ').title()
     u = User(username=username, email=f'{username}@test.com',
-             full_name=full_name, role=role, is_active=active)
+             full_name=full_name, role=role, is_active=active,
+             consent_accepted_at=datetime.now(timezone.utc))
     u.set_password(password)
     return u
 

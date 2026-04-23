@@ -56,8 +56,19 @@
                                 <i class="bi bi-key me-2"></i>Trocar Senha
                             </a>
                         </li>
+                        <li>
+                            <a class="dropdown-item" href="{{ url_for('profile.my_data') }}">
+                                <i class="bi bi-person-lines-fill me-2"></i>Meus Dados (LGPD)
+                            </a>
+                        </li>
                         <li><hr class="dropdown-divider"></li>
                         {% endif %}
+                        <li>
+                            <a class="dropdown-item small text-muted" href="{{ url_for('privacy.policy') }}">
+                                <i class="bi bi-shield-check me-2"></i>Política de Privacidade
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
                         <li>
                             <a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}">
                                 <i class="bi bi-box-arrow-right me-2"></i>Sair
