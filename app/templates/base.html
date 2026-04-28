@@ -3,35 +3,231 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}{{ title }} - InOut Veículos{% endblock %}</title>
+    <title>{% block title %}{{ title }} - InOut Veículos | AçoKorte{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <style>
-        body { background-color: #f8f9fa; }
-        .navbar-brand { font-weight: 700; letter-spacing: 1px; }
-        .sidebar { min-height: calc(100vh - 56px); background: #212529; }
-        .sidebar .nav-link { color: #adb5bd; border-radius: 6px; margin-bottom: 2px; }
-        .sidebar .nav-link:hover, .sidebar .nav-link.active { color: #fff; background: #343a40; }
+        /* ── Paleta AçoKorte ─────────────────────────────────────────────────── */
+        :root {
+            --ak-red:        #CC0000;
+            --ak-red-dark:   #A50000;
+            --ak-red-light:  rgba(204,0,0,.12);
+            --ak-dark:       #1A1A1A;
+            --ak-dark2:      #252525;
+            --ak-dark3:      #333333;
+            --ak-white:      #FFFFFF;
+            --ak-light:      #F5F5F5;
+            --ak-border:     #E2E2E2;
+            --ak-text:       #1A1A1A;
+        }
+
+        /* ── Global ──────────────────────────────────────────────────────────── */
+        body { background: var(--ak-light); color: var(--ak-text); font-family: 'Segoe UI', system-ui, sans-serif; }
+
+        /* ── Navbar ──────────────────────────────────────────────────────────── */
+        .navbar { background: var(--ak-dark) !important; border-bottom: 3px solid var(--ak-red); padding: .55rem 1rem; }
+        .navbar-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+
+        /* Oval K logo (SVG inline) */
+        .ak-oval { flex-shrink: 0; }
+
+        .ak-brand-name {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--ak-white);
+            letter-spacing: .5px;
+            line-height: 1;
+        }
+        .ak-brand-name span { color: var(--ak-red); }
+        .ak-brand-sub {
+            font-size: .68rem;
+            color: #999;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            display: block;
+            margin-top: 1px;
+        }
+
+        .navbar .nav-link, .navbar .dropdown-toggle {
+            color: #CCC !important; font-size: .9rem; padding: .4rem .8rem;
+        }
+        .navbar .nav-link:hover, .navbar .dropdown-toggle:hover { color: var(--ak-white) !important; }
+        .navbar .dropdown-menu {
+            background: var(--ak-dark2);
+            border: 1px solid var(--ak-dark3);
+        }
+        .navbar .dropdown-item { color: #CCC; font-size: .88rem; }
+        .navbar .dropdown-item:hover { background: var(--ak-red-light); color: var(--ak-white); }
+        .navbar .dropdown-divider { border-color: var(--ak-dark3); }
+        .navbar .badge.bg-secondary { background: var(--ak-dark3) !important; font-weight: 500; }
+
+        /* ── Sidebar ─────────────────────────────────────────────────────────── */
+        .sidebar {
+            min-height: calc(100vh - 59px);
+            background: var(--ak-dark);
+            border-right: 1px solid var(--ak-dark2);
+        }
+        .sidebar .nav-link {
+            color: #AAAAAA;
+            border-radius: 4px;
+            margin-bottom: 2px;
+            font-size: .875rem;
+            padding: .45rem .75rem;
+            transition: all .15s;
+            border-left: 3px solid transparent;
+        }
+        .sidebar .nav-link:hover {
+            color: var(--ak-white);
+            background: var(--ak-red-light);
+            border-left-color: var(--ak-red);
+        }
+        .sidebar .nav-link.active {
+            color: var(--ak-white);
+            background: var(--ak-red);
+            border-left-color: var(--ak-red-dark);
+            font-weight: 600;
+        }
         .sidebar .nav-link i { width: 20px; }
-        .sidebar .nav-section { color: #6c757d; font-size: .72rem; text-transform: uppercase;
-                                letter-spacing: 1px; padding: 12px 8px 4px; }
-        .card { border: none; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
-        .badge-pending { background-color: #ffc107; color: #212529; }
-        .table th { font-size: .85rem; text-transform: uppercase; letter-spacing: .5px; }
-        .vehicle-unavailable { opacity: .45; pointer-events: none; }
+        .sidebar .nav-section {
+            color: var(--ak-red);
+            font-size: .68rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            padding: 14px 10px 4px;
+            font-weight: 700;
+            opacity: .85;
+        }
+
+        /* ── Cards ───────────────────────────────────────────────────────────── */
+        .card {
+            border: none;
+            box-shadow: 0 1px 6px rgba(0,0,0,.08);
+            border-radius: 6px;
+        }
+        .card-header.ak-header {
+            background: var(--ak-dark);
+            color: var(--ak-white);
+            border-bottom: 2px solid var(--ak-red);
+            font-weight: 600;
+            letter-spacing: .3px;
+        }
+
+        /* ── Botões ──────────────────────────────────────────────────────────── */
+        .btn-primary {
+            background: var(--ak-red);
+            border-color: var(--ak-red);
+            font-weight: 600;
+        }
+        .btn-primary:hover, .btn-primary:focus {
+            background: var(--ak-red-dark);
+            border-color: var(--ak-red-dark);
+        }
+        .btn-outline-primary {
+            color: var(--ak-red);
+            border-color: var(--ak-red);
+        }
+        .btn-outline-primary:hover {
+            background: var(--ak-red);
+            border-color: var(--ak-red);
+        }
+        .btn-dark {
+            background: var(--ak-dark);
+            border-color: var(--ak-dark);
+        }
+        .btn-dark:hover { background: var(--ak-dark2); border-color: var(--ak-dark2); }
+
+        /* ── Tabela ──────────────────────────────────────────────────────────── */
+        .table th {
+            font-size: .78rem;
+            text-transform: uppercase;
+            letter-spacing: .6px;
+            background: var(--ak-dark);
+            color: var(--ak-white);
+        }
+        .table-dark th { background: var(--ak-dark) !important; }
+
+        /* ── Badges de status ────────────────────────────────────────────────── */
+        .badge-pending { background: #E67E00; color: #FFF; }
+
+        /* ── Headings com acento vermelho ────────────────────────────────────── */
+        .ak-title {
+            color: var(--ak-red);
+            font-weight: 700;
+            letter-spacing: .3px;
+        }
+        .ak-divider {
+            height: 3px;
+            background: var(--ak-red);
+            width: 48px;
+            border-radius: 2px;
+            margin-bottom: 1rem;
+        }
+
+        /* ── Footer ──────────────────────────────────────────────────────────── */
+        .ak-footer {
+            background: var(--ak-dark);
+            color: #999;
+            font-size: .78rem;
+            padding: .75rem 1.5rem;
+            border-top: 2px solid var(--ak-red);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: .5rem;
+        }
+        .ak-footer a { color: var(--ak-red); text-decoration: none; }
+        .ak-footer a:hover { color: #FF3333; }
+        .ak-footer .bi-robot { color: var(--ak-red); font-size: 1.1rem; }
+
+        /* ── Toasts ──────────────────────────────────────────────────────────── */
         .toast-container { z-index: 1090; }
         .toast { min-width: 290px; }
+
+        /* ── Misc ────────────────────────────────────────────────────────────── */
+        .vehicle-unavailable { opacity: .4; pointer-events: none; }
+        a { color: var(--ak-red); }
+        a:hover { color: var(--ak-red-dark); }
+        .text-primary { color: var(--ak-red) !important; }
+        .bg-primary { background: var(--ak-red) !important; }
+        .border-primary { border-color: var(--ak-red) !important; }
+
+        /* Scrollbar sutil */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: var(--ak-light); }
+        ::-webkit-scrollbar-thumb { background: #CCC; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--ak-red); }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+
+<!-- ── Navbar ──────────────────────────────────────────────────────────────── -->
+<nav class="navbar navbar-expand-lg">
     <div class="container-fluid">
+
         <a class="navbar-brand" href="{{ url_for('main.index') }}">
-            <i class="bi bi-truck me-2"></i>InOut Veículos
+            <!-- Logo oval K (SVG aproximado da identidade AçoKorte) -->
+            <svg class="ak-oval" width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="19" cy="19" rx="18" ry="18" fill="#CC0000"/>
+                <ellipse cx="19" cy="19" rx="18" ry="18" stroke="white" stroke-width="1.5" fill="none"/>
+                <!-- Haste vertical do K -->
+                <rect x="11" y="9" width="4" height="20" rx="0.5" fill="white"/>
+                <!-- Braço superior do K (blade) -->
+                <polygon points="15,19 26,9 29.5,9.5 15,20.5" fill="white"/>
+                <!-- Braço inferior do K (blade) -->
+                <polygon points="15,19.5 29.5,28.5 26,29 15,20" fill="white"/>
+            </svg>
+
+            <div>
+                <div class="ak-brand-name">Aço<span>Korte</span></div>
+                <span class="ak-brand-sub">InOut Veículos</span>
+            </div>
         </a>
+
         {% if current_user.is_authenticated %}
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <button class="navbar-toggler border-secondary" type="button"
+                data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
@@ -40,7 +236,7 @@
                     <a class="nav-link dropdown-toggle d-flex align-items-center gap-2"
                        href="#" role="button" data-bs-toggle="dropdown">
                         <i class="bi bi-person-circle"></i>
-                        <span class="small">{{ current_user.full_name }}</span>
+                        <span>{{ current_user.full_name }}</span>
                         <span class="badge bg-secondary ms-1">
                             {% if current_user.is_admin() %}Admin
                             {% elif current_user.is_coordinator() %}Coordenador
@@ -64,7 +260,7 @@
                         <li><hr class="dropdown-divider"></li>
                         {% endif %}
                         <li>
-                            <a class="dropdown-item small text-muted" href="{{ url_for('privacy.policy') }}">
+                            <a class="dropdown-item small" href="{{ url_for('privacy.policy') }}">
                                 <i class="bi bi-shield-check me-2"></i>Política de Privacidade
                             </a>
                         </li>
@@ -82,51 +278,140 @@
     </div>
 </nav>
 
+<!-- ── Layout principal ────────────────────────────────────────────────────── -->
 {% if current_user.is_authenticated %}
 <div class="container-fluid">
     <div class="row">
+
+        <!-- Sidebar -->
         <nav class="col-md-2 d-none d-md-block sidebar py-3 px-2">
             <ul class="nav flex-column">
+
                 {% if current_user.is_admin() %}
                 <li class="nav-section">Administração</li>
-                <li class="nav-item"><a class="nav-link {% if request.endpoint == 'admin.dashboard' %}active{% endif %}" href="{{ url_for('admin.dashboard') }}"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
-                <li class="nav-item"><a class="nav-link {% if request.endpoint and 'user' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.users') }}"><i class="bi bi-people"></i> Usuários</a></li>
-                <li class="nav-item"><a class="nav-link {% if request.endpoint and 'vehicle' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.vehicles') }}"><i class="bi bi-truck"></i> Veículos</a></li>
-                <li class="nav-item"><a class="nav-link {% if request.endpoint and 'reports' in request.endpoint %}active{% endif %}" href="{{ url_for('reports.index') }}"><i class="bi bi-bar-chart-line"></i> Relatórios</a></li>
-                <li class="nav-item"><a class="nav-link {% if request.endpoint == 'admin.audit_log' %}active{% endif %}" href="{{ url_for('admin.audit_log') }}"><i class="bi bi-shield-lock"></i> Log de Auditoria</a></li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'admin.dashboard' %}active{% endif %}"
+                       href="{{ url_for('admin.dashboard') }}">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint and 'user' in request.endpoint %}active{% endif %}"
+                       href="{{ url_for('admin.users') }}">
+                        <i class="bi bi-people"></i> Usuários
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint and 'vehicle' in request.endpoint %}active{% endif %}"
+                       href="{{ url_for('admin.vehicles') }}">
+                        <i class="bi bi-truck"></i> Veículos
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint and 'reports' in request.endpoint %}active{% endif %}"
+                       href="{{ url_for('reports.index') }}">
+                        <i class="bi bi-bar-chart-line"></i> Relatórios
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'admin.audit_log' %}active{% endif %}"
+                       href="{{ url_for('admin.audit_log') }}">
+                        <i class="bi bi-shield-lock"></i> Log de Auditoria
+                    </a>
+                </li>
 
                 {% elif current_user.is_coordinator() %}
                 <li class="nav-section">Solicitações</li>
-                <li class="nav-item"><a class="nav-link {% if request.endpoint == 'coordinator.dashboard' %}active{% endif %}" href="{{ url_for('coordinator.dashboard') }}"><i class="bi bi-clipboard-check"></i> Aprovar / Recusar</a></li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'coordinator.dashboard' %}active{% endif %}"
+                       href="{{ url_for('coordinator.dashboard') }}">
+                        <i class="bi bi-clipboard-check"></i> Aprovar / Recusar
+                    </a>
+                </li>
                 <li class="nav-section">Equipe</li>
-                <li class="nav-item"><a class="nav-link {% if request.endpoint and 'employee' in request.endpoint %}active{% endif %}" href="{{ url_for('coordinator.employees') }}"><i class="bi bi-person-badge"></i> Funcionários</a></li>
-                <li class="nav-item"><a class="nav-link {% if request.endpoint == 'coordinator.drivers' or request.endpoint == 'coordinator.create_driver' or request.endpoint == 'coordinator.edit_driver' %}active{% endif %}" href="{{ url_for('coordinator.drivers') }}"><i class="bi bi-person-workspace"></i> Motoristas</a></li>
-                <li class="nav-item"><a class="nav-link {% if 'driver_reservation' in (request.endpoint or '') %}active{% endif %}" href="{{ url_for('coordinator.driver_reservations') }}"><i class="bi bi-calendar-plus"></i> Reservas Motorista</a></li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint and 'employee' in request.endpoint %}active{% endif %}"
+                       href="{{ url_for('coordinator.employees') }}">
+                        <i class="bi bi-person-badge"></i> Funcionários
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint in ('coordinator.drivers','coordinator.create_driver','coordinator.edit_driver') %}active{% endif %}"
+                       href="{{ url_for('coordinator.drivers') }}">
+                        <i class="bi bi-person-workspace"></i> Motoristas
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if 'driver_reservation' in (request.endpoint or '') %}active{% endif %}"
+                       href="{{ url_for('coordinator.driver_reservations') }}">
+                        <i class="bi bi-calendar-plus"></i> Reservas Motorista
+                    </a>
+                </li>
                 <li class="nav-section">Relatórios</li>
-                <li class="nav-item"><a class="nav-link {% if request.endpoint and 'reports' in request.endpoint %}active{% endif %}" href="{{ url_for('reports.index') }}"><i class="bi bi-bar-chart-line"></i> Relatórios</a></li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint and 'reports' in request.endpoint %}active{% endif %}"
+                       href="{{ url_for('reports.index') }}">
+                        <i class="bi bi-bar-chart-line"></i> Relatórios
+                    </a>
+                </li>
 
                 {% elif current_user.is_security() %}
-                <li class="nav-item"><a class="nav-link active" href="{{ url_for('security.dashboard') }}"><i class="bi bi-shield-check"></i> Portaria</a></li>
+                <li class="nav-section">Portaria</li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="{{ url_for('security.dashboard') }}">
+                        <i class="bi bi-shield-check"></i> Controle de Veículos
+                    </a>
+                </li>
 
                 {% else %}
-                <li class="nav-item"><a class="nav-link {% if request.endpoint == 'employee.dashboard' %}active{% endif %}" href="{{ url_for('employee.dashboard') }}"><i class="bi bi-list-ul"></i> Minhas Solicitações</a></li>
-                <li class="nav-item"><a class="nav-link {% if request.endpoint == 'employee.new_request' %}active{% endif %}" href="{{ url_for('employee.new_request') }}"><i class="bi bi-plus-circle"></i> Nova Solicitação</a></li>
+                <li class="nav-section">Veículos</li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'employee.dashboard' %}active{% endif %}"
+                       href="{{ url_for('employee.dashboard') }}">
+                        <i class="bi bi-list-ul"></i> Minhas Solicitações
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'employee.new_request' %}active{% endif %}"
+                       href="{{ url_for('employee.new_request') }}">
+                        <i class="bi bi-plus-circle"></i> Nova Solicitação
+                    </a>
+                </li>
                 {% endif %}
+
             </ul>
         </nav>
 
+        <!-- Conteúdo principal -->
         <main class="col-md-10 ms-sm-auto px-4 py-4">
             {% block content %}{% endblock %}
         </main>
     </div>
 </div>
+
 {% else %}
+<!-- Página sem autenticação (login, etc.) -->
 <div class="container py-5">
     {% block content_unauthenticated %}{% endblock %}
 </div>
 {% endif %}
 
-{# ── Toasts ─────────────────────────────────────────────────────────────── #}
+<!-- ── Footer ─────────────────────────────────────────────────────────────── -->
+<footer class="ak-footer">
+    <span>
+        <strong style="color:#FFF;">AçoKorte</strong> — Facas e Ferramentas Industriais
+        &nbsp;|&nbsp; InOut Veículos v0.5
+    </span>
+    <span>
+        <a href="{{ url_for('privacy.policy') }}">Política de Privacidade</a>
+        &nbsp;&nbsp;
+        <i class="bi bi-robot"></i>
+        &nbsp;&nbsp;
+        © 2025 AçoKorte. Todos os direitos reservados.
+    </span>
+</footer>
+
+<!-- ── Toasts ─────────────────────────────────────────────────────────────── -->
 <div class="toast-container position-fixed bottom-0 end-0 p-3">
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% for category, message in messages %}
@@ -146,7 +431,8 @@
                 {% else %}<i class="bi bi-info-circle me-2"></i>{% endif %}
                 {{ message }}
             </div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto"
+                    data-bs-dismiss="toast"></button>
         </div>
     </div>
     {% endfor %}
@@ -155,9 +441,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    document.querySelectorAll('.toast').forEach(function(el) {
-        new bootstrap.Toast(el).show();
-    });
+    document.querySelectorAll('.toast').forEach(el => new bootstrap.Toast(el).show());
 </script>
 {% block extra_js %}{% endblock %}
 </body>
