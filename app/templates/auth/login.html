@@ -1,55 +1,298 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login — InOut Veículos | AçoKorte</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --ak-red: #CC0000;
+            --ak-red-dark: #A50000;
+            --ak-dark: #1A1A1A;
+            --ak-dark2: #252525;
+        }
 
-{% block title %}Login - InOut Veículos{% endblock %}
+        * { box-sizing: border-box; }
 
-{% block content_unauthenticated %}
-<div class="row justify-content-center">
-    <div class="col-md-4 col-sm-8">
-        <div class="text-center mb-4">
-            <i class="bi bi-truck display-3 text-dark"></i>
-            <h2 class="mt-2 fw-bold">InOut Veículos</h2>
-            <p class="text-muted">Controle de entrada e saída de veículos</p>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--ak-dark);
+        }
+
+        /* ── Layout dividido ─────────────────────────────────────────────────── */
+        .login-wrapper {
+            flex: 1;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Painel esquerdo — dark com branding */
+        .panel-left {
+            flex: 0 0 42%;
+            background: var(--ak-dark);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem 2.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Faixa vermelha vertical */
+        .panel-left::after {
+            content: '';
+            position: absolute;
+            right: 0; top: 0; bottom: 0;
+            width: 4px;
+            background: var(--ak-red);
+        }
+
+        /* Grade industrial de fundo */
+        .panel-left::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(204,0,0,.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(204,0,0,.04) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+
+        .panel-left .brand-block { position: relative; z-index: 1; text-align: center; }
+
+        /* SVG logo grande */
+        .logo-large { margin-bottom: 1.5rem; }
+
+        .brand-name {
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: #FFF;
+            letter-spacing: 1px;
+            line-height: 1;
+        }
+        .brand-name span { color: var(--ak-red); }
+        .brand-tagline {
+            font-size: .78rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: #777;
+            margin-top: .4rem;
+        }
+
+        /* Robô decorativo */
+        .robot-icon {
+            font-size: 7rem;
+            color: #333;
+            margin: 2.5rem 0 1rem;
+            line-height: 1;
+            text-shadow: 0 0 40px rgba(204,0,0,.25);
+            position: relative;
+            z-index: 1;
+        }
+        .robot-caption {
+            color: #555;
+            font-size: .75rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Painel direito — branco com formulário */
+        .panel-right {
+            flex: 1;
+            background: #F5F5F5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 380px;
+            background: #FFF;
+            border-radius: 8px;
+            box-shadow: 0 4px 24px rgba(0,0,0,.1);
+            overflow: hidden;
+        }
+        .login-card-header {
+            background: var(--ak-dark);
+            padding: 1.2rem 1.5rem;
+            border-bottom: 3px solid var(--ak-red);
+        }
+        .login-card-header h5 {
+            color: #FFF;
+            margin: 0;
+            font-size: .95rem;
+            font-weight: 600;
+            letter-spacing: .3px;
+        }
+        .login-card-header small { color: #999; font-size: .75rem; }
+        .login-card-body { padding: 1.75rem 1.5rem; }
+
+        /* Campos */
+        .form-label { font-size: .85rem; font-weight: 600; color: #444; margin-bottom: .3rem; }
+        .form-control {
+            border-radius: 4px;
+            border: 1.5px solid #DDD;
+            font-size: .9rem;
+            padding: .5rem .75rem;
+        }
+        .form-control:focus {
+            border-color: var(--ak-red);
+            box-shadow: 0 0 0 3px rgba(204,0,0,.12);
+        }
+
+        /* Botão entrar */
+        .btn-login {
+            background: var(--ak-red);
+            color: #FFF;
+            border: none;
+            border-radius: 4px;
+            padding: .6rem;
+            font-weight: 700;
+            font-size: .95rem;
+            letter-spacing: .5px;
+            width: 100%;
+            text-transform: uppercase;
+            transition: background .2s;
+        }
+        .btn-login:hover { background: var(--ak-red-dark); color: #FFF; }
+
+        .link-forgot { color: #999; font-size: .8rem; text-decoration: none; }
+        .link-forgot:hover { color: var(--ak-red); }
+
+        /* Footer mínimo */
+        .login-footer {
+            background: var(--ak-dark);
+            color: #555;
+            font-size: .72rem;
+            text-align: center;
+            padding: .6rem;
+            letter-spacing: .5px;
+        }
+        .login-footer a { color: var(--ak-red); text-decoration: none; }
+
+        /* Responsivo */
+        @media (max-width: 768px) {
+            .panel-left { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-wrapper">
+
+    <!-- ── Painel esquerdo: branding AçoKorte ──────────────────────────────── -->
+    <div class="panel-left">
+        <div class="brand-block">
+
+            <!-- Logo oval K -->
+            <div class="logo-large">
+                <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <ellipse cx="40" cy="40" rx="38" ry="38" fill="#CC0000"/>
+                    <ellipse cx="40" cy="40" rx="38" ry="38" stroke="white" stroke-width="3" fill="none"/>
+                    <!-- Haste vertical K -->
+                    <rect x="23" y="18" width="8" height="44" rx="1" fill="white"/>
+                    <!-- Braço superior K -->
+                    <polygon points="31,40 56,18 62,19.5 31,43" fill="white"/>
+                    <!-- Braço inferior K -->
+                    <polygon points="31,41 62,60.5 56,62 31,43" fill="white"/>
+                </svg>
+            </div>
+
+            <div class="brand-name">Aço<span>Korte</span></div>
+            <div class="brand-tagline">Soluções em corte e desgaste</div>
+
+            <!-- Robô mascote (Bootstrap Icons) -->
+            <div class="robot-icon">
+                <i class="bi bi-robot"></i>
+            </div>
+            <div class="robot-caption">Tecnologia de alta performance</div>
         </div>
-        <div class="card shadow-sm">
-            <div class="card-body p-4">
-                <h5 class="card-title mb-4">Entrar no sistema</h5>
-                <form method="POST" action="{{ url_for('auth.login') }}" novalidate>
-                    {{ form.hidden_tag() }}
-                    <div class="mb-3">
-                        {{ form.username.label(class="form-label") }}
-                        {{ form.username(class="form-control" + (" is-invalid" if form.username.errors else ""), placeholder="seu.usuario") }}
-                        {% for error in form.username.errors %}
-                            <div class="invalid-feedback">{{ error }}</div>
-                        {% endfor %}
-                    </div>
-                    <div class="mb-3">
-                        {{ form.password.label(class="form-label") }}
-                        {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else ""), placeholder="••••••••") }}
-                        {% for error in form.password.errors %}
-                            <div class="invalid-feedback">{{ error }}</div>
-                        {% endfor %}
-                    </div>
-                    <div class="mb-3 form-check">
-                        {{ form.remember_me(class="form-check-input") }}
-                        {{ form.remember_me.label(class="form-check-label") }}
-                    </div>
-                    {{ form.submit(class="btn btn-dark w-100") }}
+    </div>
 
-                    {# Erro de credenciais — exibido abaixo do botão, dentro do card #}
-                    {% if error %}
-                    <div class="alert alert-danger mt-3 mb-0 py-2 text-center small" role="alert">
-                        <i class="bi bi-exclamation-triangle-fill me-1"></i>{{ error }}
-                    </div>
-                    {% endif %}
-                </form>
-
-                <div class="text-center mt-3">
-                    <a href="{{ url_for('auth.password_reset_request') }}" class="text-muted small">
-                        <i class="bi bi-key me-1"></i>Esqueci minha senha
-                    </a>
+    <!-- ── Painel direito: formulário de login ─────────────────────────────── -->
+    <div class="panel-right">
+        <div>
+            <div class="login-card">
+                <div class="login-card-header">
+                    <h5><i class="bi bi-truck me-2"></i>InOut Veículos</h5>
+                    <small>Controle de entrada e saída de frota</small>
                 </div>
+                <div class="login-card-body">
+                    <form method="POST" action="{{ url_for('auth.login') }}" novalidate>
+                        {{ form.hidden_tag() }}
+
+                        <div class="mb-3">
+                            {{ form.username.label(class="form-label") }}
+                            {{ form.username(class="form-control" + (" is-invalid" if form.username.errors else ""),
+                               placeholder="seu.usuario", autocomplete="username") }}
+                            {% for e in form.username.errors %}
+                                <div class="invalid-feedback">{{ e }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.password.label(class="form-label") }}
+                            {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else ""),
+                               placeholder="••••••••", autocomplete="current-password") }}
+                            {% for e in form.password.errors %}
+                                <div class="invalid-feedback">{{ e }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="mb-4 form-check">
+                            {{ form.remember_me(class="form-check-input") }}
+                            <label class="form-check-label" style="font-size:.83rem;color:#666;">
+                                Manter conectado
+                            </label>
+                        </div>
+
+                        <button type="submit" class="btn-login">
+                            <i class="bi bi-box-arrow-in-right me-1"></i> Entrar
+                        </button>
+
+                        {% if error %}
+                        <div class="alert alert-danger mt-3 mb-0 py-2 text-center small" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill me-1"></i>{{ error }}
+                        </div>
+                        {% endif %}
+                    </form>
+
+                    <div class="text-center mt-3">
+                        <a href="{{ url_for('auth.password_reset_request') }}" class="link-forgot">
+                            <i class="bi bi-key me-1"></i>Esqueci minha senha
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-3" style="font-size:.72rem;color:#AAA;">
+                <a href="{{ url_for('privacy.policy') }}"
+                   style="color:#888;text-decoration:none;">
+                    <i class="bi bi-shield-check me-1"></i>Política de Privacidade
+                </a>
             </div>
         </div>
     </div>
 </div>
-{% endblock %}
+
+<!-- Footer -->
+<div class="login-footer">
+    © 2025 <strong style="color:#FFF;">AçoKorte</strong> — Todos os direitos reservados
+    &nbsp;|&nbsp; InOut Veículos v0.5
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

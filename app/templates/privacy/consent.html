@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+<div class="col-lg-6">
+  <div class="card shadow-sm border-primary">
+    <div class="card-header bg-primary text-white text-center py-3">
+      <i class="bi bi-shield-check fs-3 d-block mb-1"></i>
+      <h5 class="mb-0">Política de Privacidade</h5>
+      <small class="opacity-75">Leia antes de continuar</small>
+    </div>
+    <div class="card-body px-4 py-3">
+
+      <p class="small text-muted mb-3">
+        Olá, <strong>{{ current_user.full_name }}</strong>. Antes de acessar o sistema pela primeira vez,
+        precisamos que você leia e confirme nossa Política de Privacidade.
+      </p>
+
+      <div class="bg-light rounded p-3 mb-3" style="max-height: 260px; overflow-y: auto; font-size: .82rem;">
+        <p><strong>Quais dados coletamos:</strong> nome, e-mail, dados de solicitações de veículos
+        (datas, horários, odômetro, motivo), endereço IP para segurança e logs de auditoria.</p>
+
+        <p><strong>Para que usamos:</strong> exclusivamente para o controle operacional de frota
+        da sua organização. Nenhum dado é vendido ou repassado a terceiros.</p>
+
+        <p><strong>Segurança:</strong> senhas com hash criptográfico, proteção contra força bruta,
+        sessão com expiração automática, cabeçalhos HTTP de segurança e backup automático.</p>
+
+        <p><strong>Seus direitos (LGPD):</strong> você pode acessar, corrigir, exportar e solicitar
+        a exclusão dos seus dados a qualquer momento em <em>Minha Conta → Meus Dados</em>.</p>
+
+        <p class="mb-0"><strong>Retenção:</strong> dados da conta mantidos enquanto o vínculo
+        estiver ativo; registros de solicitações por 5 anos; logs de auditoria por 2 anos.</p>
+      </div>
+
+      <p class="small mb-3">
+        Leia o documento completo em
+        <a href="{{ url_for('privacy.policy') }}" target="_blank">Política de Privacidade completa</a>.
+      </p>
+
+      <form method="post">
+        {{ csrf_token() if csrf_token is defined else '' }}
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="form-check mb-3">
+          <input class="form-check-input" type="checkbox" id="chk_aceito" name="_chk" value="1" required>
+          <label class="form-check-label small" for="chk_aceito">
+            Li e compreendi a Política de Privacidade e concordo com o tratamento dos meus dados
+            conforme descrito acima.
+          </label>
+        </div>
+
+        <div class="d-grid">
+          <button type="submit" name="aceito" value="1"
+                  class="btn btn-primary" id="btn_aceitar" disabled>
+            <i class="bi bi-check-circle me-1"></i>Aceitar e continuar
+          </button>
+        </div>
+      </form>
+
+    </div>
+    <div class="card-footer text-center py-2">
+      <small class="text-muted">
+        Dúvidas? Fale com o administrador do sistema ou consulte a
+        <a href="https://www.gov.br/anpd" target="_blank" rel="noopener noreferrer">ANPD</a>.
+      </small>
+    </div>
+  </div>
+</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const chk = document.getElementById('chk_aceito');
+  const btn = document.getElementById('btn_aceitar');
+  chk.addEventListener('change', () => btn.disabled = !chk.checked);
+</script>
+{% endblock %}

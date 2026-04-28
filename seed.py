@@ -22,8 +22,10 @@ def _column_exists(conn, table, column):
 def _migrate_columns(conn):
     """Adiciona colunas novas em tabelas existentes sem apagar dados (v0.4)."""
     alterations = [
-        ('vehicle_requests', 'odometer_return', 'INTEGER'),
-        ('vehicle_requests', 'portaria_obs',    'TEXT'),
+        ('vehicle_requests', 'odometer_return',    'INTEGER'),
+        ('vehicle_requests', 'portaria_obs',       'TEXT'),
+        ('users',            'consent_accepted_at', 'DATETIME'),
+        ('users',            'deletion_requested_at', 'DATETIME'),
     ]
     for table, column, col_type in alterations:
         if not _column_exists(conn, table, column):
