@@ -31,6 +31,15 @@ def app():
     return application
 
 
+@pytest.fixture(autouse=True)
+def reset_rate_limiter():
+    """Limpa o rate limiter entre testes para evitar bloqueio de IP acumulado."""
+    from app import security_utils
+    security_utils._attempts.clear()
+    yield
+    security_utils._attempts.clear()
+
+
 @pytest.fixture
 def client(app):
     """Cliente HTTP com banco zerado a cada teste."""
